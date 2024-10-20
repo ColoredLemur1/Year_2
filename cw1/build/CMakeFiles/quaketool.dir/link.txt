@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/quaketool.dir/main.cpp.o CMakeFiles/quaketool.dir/quake.cpp.o CMakeFiles/quaketool.dir/dataset.cpp.o -o quaketool  -lpthread 
