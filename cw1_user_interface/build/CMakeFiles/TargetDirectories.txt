@@ -1,0 +1,5 @@
+/home/colorfast/Documents/user_interface/cw1/build/CMakeFiles/quaketool.dir
+/home/colorfast/Documents/user_interface/cw1/build/CMakeFiles/test_dataset.dir
+/home/colorfast/Documents/user_interface/cw1/build/CMakeFiles/test_quake.dir
+/home/colorfast/Documents/user_interface/cw1/build/CMakeFiles/edit_cache.dir
+/home/colorfast/Documents/user_interface/cw1/build/CMakeFiles/rebuild_cache.dir
