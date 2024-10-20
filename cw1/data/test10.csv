@@ -1,0 +1,11 @@
+time,latitude,longitude,depth,mag,magType,nst,gap,dmin,rms,net,id,updated,place,type,horizontalError,depthError,magError,magNst,status,locationSource,magSource
+2022-08-02T21:11:41.381Z,-18.1158,-178.2021,521.281,5.6,mww,105,33,3.527,1.04,us,us6000i7k8,2022-08-02T23:14:56.083Z,"262 km E of Levuka, Fiji",earthquake,10.01,5.634,0.093,11,reviewed,us,us
+2022-08-02T19:19:33.966Z,7.2218,126.9495,41.298,5.4,mww,121,44,1.368,1.03,us,us6000i7j6,2022-08-02T21:22:53.348Z,"42 km E of Santiago, Philippines",earthquake,6.56,4.354,0.063,24,reviewed,us,us
+2022-08-02T15:17:01.461Z,16.1209,-87.5144,10,5.4,mww,77,45,2.065,0.59,us,us6000i7hp,2022-08-03T00:40:59.512Z,"38 km N of Tela, Honduras",earthquake,6.12,1.876,0.043,52,reviewed,us,us
+2022-08-02T13:14:39.388Z,-7.0983,107.5458,134.66,4.5,mb,35,77,0.376,0.75,us,us6000i7g1,2022-08-02T14:15:47.834Z,"7 km SW of Banjaran, Indonesia",earthquake,8.9,5.2,0.124,22,reviewed,us,us
+2022-08-02T12:49:57.471Z,-60.0476,-26.7786,103.08,5,mb,57,64,7.819,0.54,us,us6000i7fu,2022-08-02T13:08:31.040Z,"South Sandwich Islands region",earthquake,9.6,6.8,0.076,55,reviewed,us,us
+2022-08-02T10:19:30.400Z,1.7076,99.5372,180.12,4.5,mb,75,105,1.155,0.66,us,us6000i7ev,2022-08-02T10:50:19.040Z,"44 km SSW of Bandar, Indonesia",earthquake,6.2,6.4,0.068,64,reviewed,us,us
+2022-08-02T05:24:32.293Z,6.7917,123.8396,57.998,5.5,mww,70,57,1.749,0.69,us,us6000i7d8,2022-08-02T18:50:56.320Z,"19 km W of Gadung, Philippines",earthquake,4.12,5.09,0.065,23,reviewed,us,us
+2022-08-02T02:27:06.040Z,64.0851,-22.0236,10,5,mww,81,52,0.731,0.56,us,us6000i7cg,2022-08-02T20:01:07.521Z,"1 km SSW of Álftanes, Iceland",earthquake,6.15,1.854,0.063,24,reviewed,us,us
+2022-08-02T01:42:16.882Z,-11.9345,166.7576,202.139,5.2,mww,88,40,3.519,0.55,us,us6000i7cb,2022-08-02T18:23:28.040Z,"169 km SE of Lata, Solomon Islands",earthquake,9.79,2.181,0.086,13,reviewed,us,us
+2022-08-02T00:42:56.247Z,-3.1388,148.4565,10,4.7,mb,46,54,3.844,0.52,us,us6000i7c0,2022-08-02T01:10:25.040Z,"179 km SE of Lorengau, Papua New Guinea",earthquake,7,1.9,0.073,57,reviewed,us,us
