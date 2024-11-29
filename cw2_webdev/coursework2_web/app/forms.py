@@ -22,10 +22,6 @@ class RecipeForm(FlaskForm):
     submit = SubmitField('submit')
 
 def validate_user(username):
-    print("Debug: validate_user function called")
-    if db.session.query(User).count() == 0:
-        print("Debug: User table is empty")
-        return True
     user = db.session.query(User).filter_by(username=username).first()
     if user:
         print("Debug: Username already exists")

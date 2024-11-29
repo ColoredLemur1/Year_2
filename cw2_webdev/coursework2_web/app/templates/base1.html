@@ -22,11 +22,19 @@
             <span></span>
             <span></span>
             <span class="navbar-text text-black no-margin">User info-></span>
-            <a href="{{ url_for('login') }}">
-                <button class="btn btn-outline-dark {% if active_page == 'login' %}active{% endif %}" type="button">
+            {% if logged_in %}
+            <a href="{{ url_for('user') }}">
+                <button class="btn btn-outline-dark {% if active_page == 'user' %}active{% endif %}" type="button">
                     <i class="bi bi-person-circle"></i>
                 </button>
             </a>
+            {% else %}
+                <a href="{{ url_for('login') }}">
+                    <button class="btn btn-outline-dark {% if active_page == 'login' %}active{% endif %}" type="button">
+                        <i class="bi bi-person-circle"></i>
+                    </button>
+                </a>
+            {% endif %}
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -63,6 +71,9 @@
             </div>
         </div>
     </nav>
+    {% if logged_in %}
+        <button class="btn btn-primary fixed-button" type="button">Fixed Button</button>
+    {% endif %}
     <div class="container">
         {% block content %}
         {% endblock %}
