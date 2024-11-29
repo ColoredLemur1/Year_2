@@ -1,0 +1,19 @@
+{% extends "base2.html" %}
+    {% block content %}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }} </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body text-center">
+                <p>Don't have an account yet? Sign up bellow!</p>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary {% if active_page == 'register' %}active{% endif %}">Sign Up</a>
+            </div>
+        </div>
+    {% endblock%}
