@@ -10,8 +10,8 @@ from sklearn.tree import export_text
 import warnings
 import os
 
-# STUDENT NAME: XXX
-# STUDENT EMAIL:  YYY@leeds.ac.uk
+# STUDENT NAME: Javier Duarte Macias
+# STUDENT EMAIL:  sc23jdm@leeds.ac.uk
     
 def print_tree_structure(model, header_list):
     tree_rules = export_text(model, feature_names=header_list[:-1])
