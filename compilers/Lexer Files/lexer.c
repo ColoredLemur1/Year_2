@@ -219,15 +219,20 @@ int main ()
     "RESWORD", "ID", "INT", "SYMBOL", "STRING", "EOFile", "ERR"
   };
 
-  if (!InitLexer("Empty.jack")) {
+  if (!InitLexer("Main.jack")) {
     fprintf(stderr, "Failed to initialize lexer.\n");
     return 1;
   }
   while (1) {
     Token t = GetNextToken();
-    printf("Type: %-7s, Lexeme: %-15s, Line: %d, File: %s\n", 
-               TokenTypeNames[t.tp], t.lx, t.ln, t.fl);
-    if (t.tp == EOFile) break;
+    if (t.tp == EOFile){
+      printf("< %s, %d, End of File, %s >\n", 
+        t.fl,t.ln,TokenTypeNames[t.tp]);
+        break;
+    }else{
+      printf("< %s, %d, %s, %s >\n", 
+        t.fl,t.ln,t.lx,TokenTypeNames[t.tp]);
+    }
   }
   StopLexer();
 	return 0;
