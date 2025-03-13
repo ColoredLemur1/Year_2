@@ -24,28 +24,40 @@ def load_data(file_path, delimiter=','):
         warnings.warn(f"Task 1: Warning - CSV file '{file_path}' does not exist.")
         return None, None, None
     # Insert your code here for task 1
+    raw_data = pd.read_csv(file_path)
+    data = raw_data.to_numpy()
+    num_rows = data.shape[0]
+    header_list = data.columns.tolist()
     return num_rows, data, header_list
 
 # Task 2[8 marks]: 
 def filter_data(data):
     filtered_data=[None]*1
     # Insert your code here for task 2
-
+    filtered_data = data[~np.isin(data, -99).any(axis=1)]
     return filtered_data
 
 # Task 3 [8 marks]: 
 def statistics_data(data):
     coefficient_of_variation=None
     # Insert your code here for task 3
+    std_per_column = np.std(data[:,:-1],axis=0)
+    mean_per_column = np.mean(data[:,:-1],axis=0)
 
+    coefficient_of_variation = std_per_column/mean_per_column
     return coefficient_of_variation
 
 # Task 4 [8 marks]: 
 def split_data(data, test_size=0.3, random_state=1):
     x_train, x_test, y_train, y_test=None, None, None, None
     np.random.seed(1)
+    
     # Insert your code here for task 4
+    X= data[:, :-1]
+    Y = data[:, -1]
 
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=random_state, stratify=Y)
+    
     return x_train, x_test, y_train, y_test
 
 # Task 5 [8 marks]: 
