@@ -67,7 +67,6 @@ int EatWC(){
                 if (c == '\n') LineCount++;
             }
             if (c == EOF) {
-                // End of file in comment
                 NextToken.tp = ERR;
                 NextToken.ec = EofInCom;
                 strcpy(NextToken.lx, "Error: End of file in comment");
@@ -241,39 +240,3 @@ int StopLexer ()
   return 0;
 }
 
-// do not remove the next line
-#ifndef TEST
-int main ()
-{
-    // implement your main function here
-    // NOTE: the autograder will not use your main function
-    const char* TokenTypeNames[] = {
-        "RESWORD", "ID", "INT", "SYMBOL", "STRING", "EOFile", "ERR"
-    };
-    
-    const char* ErrorTypeNames[] = {
-        "EofInCom", "NewLnInStr", "EofInStr", "IllSym"
-    };
-
-    if (!InitLexer("Main.jack")) {
-        fprintf(stderr, "Failed to initialize lexer.\n");
-        return 1;
-    }
-    while (1) {
-        Token t = GetNextToken();
-        if (t.tp == EOFile){
-            printf("< %s, %d, End of File, %s >\n", 
-                t.fl, t.ln, TokenTypeNames[t.tp]);
-            break;
-        } else if (t.tp == ERR) {
-            printf("< %s, %d, %s, %s, %s >\n", 
-                t.fl, t.ln, t.lx, TokenTypeNames[t.tp], ErrorTypeNames[t.ec]);
-        } else {
-            printf("< %s, %d, %s, %s >\n", 
-                t.fl, t.ln, t.lx, TokenTypeNames[t.tp]);
-        }
-    }
-    StopLexer();
-    return 0;
-}
-#endif

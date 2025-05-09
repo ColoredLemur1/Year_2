@@ -29,7 +29,7 @@ int TokenReady;
 FILE* f;
 Token NextToken;
 char FileName[32] = "";
-const char Symbols[] = "+-*/=<>();,.{}[]";
+const char Symbols[] = "+-*/=<>();,.{}[]&~|";
 
 
 int EatWC(){
@@ -67,7 +67,6 @@ int EatWC(){
                 if (c == '\n') LineCount++;
             }
             if (c == EOF) {
-                // End of file in comment
                 NextToken.tp = ERR;
                 NextToken.ec = EofInCom;
                 strcpy(NextToken.lx, "Error: End of file in comment");
@@ -191,7 +190,7 @@ Token GetNextToken ()
             if (c == '\n') {
                 t.tp = ERR;
                 t.ec = NewLnInStr;
-                strcpy(t.lx, "Error: New line in string literal");
+                strcpy(t.lx, "Error: new line in string constant");
                 LineCount++;
                 return t;
             }
@@ -201,7 +200,7 @@ Token GetNextToken ()
         if (c != '"') {  
             t.tp = ERR;
             t.ec = EofInStr;
-            strcpy(t.lx, "Error: End of file in string literal");
+            strcpy(t.lx, "Error: unexpected eof in string constant");
         }
     }
     //symbols
@@ -213,7 +212,7 @@ Token GetNextToken ()
         t.tp = ERR;
         t.ec = IllSym;
         char errorMsg[128];
-        snprintf(errorMsg, sizeof(errorMsg), "Error: Illegal symbol '%c'", c);
+        snprintf(errorMsg, sizeof(errorMsg), "Error: illegal symbol in source file");
         strcpy(t.lx, errorMsg);
     }
     return t;
@@ -255,7 +254,7 @@ int main ()
         "EofInCom", "NewLnInStr", "EofInStr", "IllSym"
     };
 
-    if (!InitLexer("Main.jack")) {
+    if (!InitLexer("IllegalSymbol.jack")) {
         fprintf(stderr, "Failed to initialize lexer.\n");
         return 1;
     }
