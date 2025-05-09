@@ -43,6 +43,7 @@ int EatWC(){
     if (c == '/') {
         c = getc(f);
         if (c == '/') {
+            // Single line comment
             while (c != EOF && c != '\n') {
                 c = getc(f);
             }
@@ -50,6 +51,30 @@ int EatWC(){
                 LineCount++;
                 c = getc(f);
             }
+            if (c == EOF) {
+                return c;
+            }
+            if (isspace(c) || c == '/') {
+                ungetc(c, f);
+                return EatWC();
+            }
+        } else if (c == '*') {
+            // Multi-line comment
+            int prevChar = 0;
+            while (c != EOF && !(prevChar == '*' && c == '/')) {
+                prevChar = c;
+                c = getc(f);
+                if (c == '\n') LineCount++;
+            }
+            if (c == EOF) {
+                // End of file in comment
+                NextToken.tp = ERR;
+                NextToken.ec = EofInCom;
+                strcpy(NextToken.lx, "Error: End of file in comment");
+                TokenReady = 1;
+                return EOF;
+            }
+            c = getc(f);
             if (c == EOF) {
                 return c;
             }
@@ -105,86 +130,93 @@ int InitLexer (char* file_name)
 // Get the next token from the source file
 Token GetNextToken ()
 {
-	Token t;
-  t.tp = ERR;
-  strncpy(t.fl, FileName, sizeof(t.fl) - 1);
-  t.fl[sizeof(t.fl) - 1] = '\0';
-
-  if (TokenReady){
-    TokenReady = 0;
-    return NextToken;
-  }
-  //check if file is open
-  if (f == NULL){
-    return t;
-  }
-  //remove white space
-  int c = EatWC();
-
-  if (c == EOF){
-    t.tp = EOFile;
-    t.ln = LineCount;
-    return t;
-  }
-
-  t.ln = LineCount;
-
-  //Numbers
-  if (c >= '0' && c <= '9'){
-    t.tp = INT;
-    t.lx[0] = c;
-    int i = 1;
-    while ((c = fgetc(f)) != EOF && c >= '0' && c <= '9') {
-      if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
-    }
-    t.lx[i] = '\0';
-    if (c != EOF) ungetc(c, f);
-  }
-  //Word or reserved word
-  else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'){
-    t.lx[0] = c;
-    int i = 1;
-    while ((c = fgetc(f)) != EOF && 
-            ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
-            (c >= '0' && c <= '9') || c == '_')) {
-        if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
-    }
-    t.lx[i] = '\0';
-    if (c != EOF) ungetc(c, f);
-    int isReserved = isReservedWord(t.lx);
-    if (isReserved) {
-        t.tp = RESWORD;
-    } else {
-        t.tp = ID;
-    }
-  }
-  // string
-  else if(c == '"'){
-    t.tp = STRING;
-    int i = 0;
-    while ((c = fgetc(f)) != EOF && c != '"') {
-        if (c == '\n') LineCount++; 
-        if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
-    }
-    t.lx[i] = '\0';
-    if (c != '"') {  
-        t.tp = ERR;
-        t.ec = 1;    
-    } else {
-      //placeholder
-    }
-  }
-  //symbols
-  else if (strchr(Symbols, c) != NULL){
-    t.tp = SYMBOL;
-    t.lx[0] = c;
-    t.lx[1] = '\0';
-
-  }else{
+    Token t;
     t.tp = ERR;
-    t.ec = 3;
-  }
-  return t;
+    strncpy(t.fl, FileName, sizeof(t.fl) - 1);
+    t.fl[sizeof(t.fl) - 1] = '\0';
+
+    if (TokenReady){
+        TokenReady = 0;
+        return NextToken;
+    }
+    
+    if (f == NULL){
+        return t;
+    }
+    //remove white space
+    int c = EatWC();
+
+    if (c == EOF){
+        t.tp = EOFile;
+        t.ln = LineCount;
+        return t;
+    }
+
+    t.ln = LineCount;
+
+    //Numbers
+    if (c >= '0' && c <= '9'){
+        t.tp = INT;
+        t.lx[0] = c;
+        int i = 1;
+        while ((c = fgetc(f)) != EOF && c >= '0' && c <= '9') {
+            if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
+        }
+        t.lx[i] = '\0';
+        if (c != EOF) ungetc(c, f);
+    }
+    //Word or reserved word
+    else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'){
+        t.lx[0] = c;
+        int i = 1;
+        while ((c = fgetc(f)) != EOF && 
+                ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
+                (c >= '0' && c <= '9') || c == '_')) {
+            if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
+        }
+        t.lx[i] = '\0';
+        if (c != EOF) ungetc(c, f);
+        int isReserved = isReservedWord(t.lx);
+        if (isReserved) {
+            t.tp = RESWORD;
+        } else {
+            t.tp = ID;
+        }
+    }
+    // string
+    else if(c == '"'){
+        t.tp = STRING;
+        int i = 0;
+        while ((c = fgetc(f)) != EOF && c != '"') {
+            if (c == '\n') {
+                t.tp = ERR;
+                t.ec = NewLnInStr;
+                strcpy(t.lx, "Error: New line in string literal");
+                LineCount++;
+                return t;
+            }
+            if (i < sizeof(t.lx) - 1) t.lx[i++] = c;
+        }
+        t.lx[i] = '\0';
+        if (c != '"') {  
+            t.tp = ERR;
+            t.ec = EofInStr;
+            strcpy(t.lx, "Error: End of file in string literal");
+        }
+    }
+    //symbols
+    else if (strchr(Symbols, c) != NULL){
+        t.tp = SYMBOL;
+        t.lx[0] = c;
+        t.lx[1] = '\0';
+    }else{
+        t.tp = ERR;
+        t.ec = IllSym;
+        char errorMsg[128];
+        snprintf(errorMsg, sizeof(errorMsg), "Error: Illegal symbol '%c'", c);
+        strcpy(t.lx, errorMsg);
+    }
+    return t;
 }
 
 // peek (look) at the next token in the source file without removing it from the stream
@@ -213,29 +245,35 @@ int StopLexer ()
 #ifndef TEST
 int main ()
 {
-	// implement your main function here
-  // NOTE: the autograder will not use your main function
-  const char* TokenTypeNames[] = {
-    "RESWORD", "ID", "INT", "SYMBOL", "STRING", "EOFile", "ERR"
-  };
+    // implement your main function here
+    // NOTE: the autograder will not use your main function
+    const char* TokenTypeNames[] = {
+        "RESWORD", "ID", "INT", "SYMBOL", "STRING", "EOFile", "ERR"
+    };
+    
+    const char* ErrorTypeNames[] = {
+        "EofInCom", "NewLnInStr", "EofInStr", "IllSym"
+    };
 
-  if (!InitLexer("Main.jack")) {
-    fprintf(stderr, "Failed to initialize lexer.\n");
-    return 1;
-  }
-  while (1) {
-    Token t = GetNextToken();
-    if (t.tp == EOFile){
-      printf("< %s, %d, End of File, %s >\n", 
-        t.fl,t.ln,TokenTypeNames[t.tp]);
-        break;
-    }else{
-      printf("< %s, %d, %s, %s >\n", 
-        t.fl,t.ln,t.lx,TokenTypeNames[t.tp]);
+    if (!InitLexer("IllegalSymbol.jack")) {
+        fprintf(stderr, "Failed to initialize lexer.\n");
+        return 1;
     }
-  }
-  StopLexer();
-	return 0;
+    while (1) {
+        Token t = GetNextToken();
+        if (t.tp == EOFile){
+            printf("< %s, %d, End of File, %s >\n", 
+                t.fl, t.ln, TokenTypeNames[t.tp]);
+            break;
+        } else if (t.tp == ERR) {
+            printf("< %s, %d, %s, %s, %s >\n", 
+                t.fl, t.ln, t.lx, TokenTypeNames[t.tp], ErrorTypeNames[t.ec]);
+        } else {
+            printf("< %s, %d, %s, %s >\n", 
+                t.fl, t.ln, t.lx, TokenTypeNames[t.tp]);
+        }
+    }
+    StopLexer();
+    return 0;
 }
-// do not remove the next line
 #endif
