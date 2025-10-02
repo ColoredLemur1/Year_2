@@ -1,8 +1,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <vector>
+#include <utility>
+#include <cmath>
 
 #include <print>
+#include <stdio.h>
 #include <typeinfo>
 #include <stdexcept>
 
@@ -23,6 +27,11 @@ namespace
 
 	void glfw_callback_key_( GLFWwindow*, int, int, int, int );
 
+	void glfw_cb_motion_( GLFWwindow*, double, double );
+
+	void glfw_cb_button_( GLFWwindow*, int, int, int );
+
+	std::vector<std::pair<double, double>> clicked_pixels;
 
 	struct GLFWCleanupHelper
 	{
@@ -102,6 +111,9 @@ int main() try
 
 	glfwSetKeyCallback( window, &glfw_callback_key_ );
 
+	glfwSetCursorPosCallback( window, &glfw_cb_motion_ );
+	glfwSetMouseButtonCallback( window, &glfw_cb_button_ );
+
 	glfwMakeContextCurrent( window );
 	glfwSwapInterval( 1 );
 
@@ -121,6 +133,10 @@ int main() try
 		surface.clear();
 
 		//TODO: drawing code goes here
+		for(auto const& pos : clicked_pixels)
+		{
+			surface.set_pixel_srgb( pos.first, pos.second, { 255, 255, 255 } );
+		}
 
 		context.draw( surface );
 
@@ -158,6 +174,20 @@ namespace
 			return;
 		}
 	}
+	void glfw_cb_motion_( GLFWwindow* aWindow, double aXPos, double aYPos )
+	{
+	}
+
+	void glfw_cb_button_( GLFWwindow* aWindow, int aButton, int aAction, int aMods )
+	{
+		if ( aAction == GLFW_PRESS && aButton == GLFW_MOUSE_BUTTON_1 )
+		{
+			double x, y;
+			glfwGetCursorPos( aWindow, &x, &y );
+			clicked_pixels.emplace_back(x, y);
+		}
+	}
+
 
 }
 

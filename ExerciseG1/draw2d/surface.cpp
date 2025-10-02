@@ -50,6 +50,7 @@ void Surface::fill( ColorU8_sRGB aColor ) noexcept
 	}
 }
 
+
 std::uint8_t const* Surface::get_surface_ptr() const noexcept
 {
 	return mSurface;
