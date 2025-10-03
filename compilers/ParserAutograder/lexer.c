@@ -29,7 +29,7 @@ int TokenReady;
 FILE* f;
 Token NextToken;
 char FileName[32] = "";
-const char Symbols[] = "+-*/=<>();,.{}[]&~|";
+const char Symbols[] = "+-*/=<>();,.{}[]";
 
 
 int EatWC(){
@@ -67,6 +67,7 @@ int EatWC(){
                 if (c == '\n') LineCount++;
             }
             if (c == EOF) {
+                // End of file in comment
                 NextToken.tp = ERR;
                 NextToken.ec = EofInCom;
                 strcpy(NextToken.lx, "Error: End of file in comment");
@@ -134,14 +135,18 @@ Token GetNextToken ()
     strncpy(t.fl, FileName, sizeof(t.fl) - 1);
     t.fl[sizeof(t.fl) - 1] = '\0';
 
-    if (TokenReady){
-        TokenReady = 0;
-        return NextToken;
+    // Check if a token is already ready (peeked)
+    if (TokenReady) {
+        t = NextToken;       // Return the peeked token
+        TokenReady = 0;      // Clear the flag
+        return t;
     }
     
     if (f == NULL){
+        t.tp = EOFile; // Or ERR, depending on desired behavior
         return t;
     }
+
     //remove white space
     int c = EatWC();
 
@@ -190,7 +195,7 @@ Token GetNextToken ()
             if (c == '\n') {
                 t.tp = ERR;
                 t.ec = NewLnInStr;
-                strcpy(t.lx, "Error: new line in string constant");
+                strcpy(t.lx, "Error: New line in string literal");
                 LineCount++;
                 return t;
             }
@@ -200,7 +205,7 @@ Token GetNextToken ()
         if (c != '"') {  
             t.tp = ERR;
             t.ec = EofInStr;
-            strcpy(t.lx, "Error: unexpected eof in string constant");
+            strcpy(t.lx, "Error: End of file in string literal");
         }
     }
     //symbols
@@ -212,7 +217,7 @@ Token GetNextToken ()
         t.tp = ERR;
         t.ec = IllSym;
         char errorMsg[128];
-        snprintf(errorMsg, sizeof(errorMsg), "Error: illegal symbol in source file");
+        snprintf(errorMsg, sizeof(errorMsg), "Error: Illegal symbol '%c'", c);
         strcpy(t.lx, errorMsg);
     }
     return t;
@@ -240,39 +245,3 @@ int StopLexer ()
   return 0;
 }
 
-// do not remove the next line
-#ifndef TEST
-int main ()
-{
-    // implement your main function here
-    // NOTE: the autograder will not use your main function
-    const char* TokenTypeNames[] = {
-        "RESWORD", "ID", "INT", "SYMBOL", "STRING", "EOFile", "ERR"
-    };
-    
-    const char* ErrorTypeNames[] = {
-        "EofInCom", "NewLnInStr", "EofInStr", "IllSym"
-    };
-
-    if (!InitLexer("IllegalSymbol.jack")) {
-        fprintf(stderr, "Failed to initialize lexer.\n");
-        return 1;
-    }
-    while (1) {
-        Token t = GetNextToken();
-        if (t.tp == EOFile){
-            printf("< %s, %d, End of File, %s >\n", 
-                t.fl, t.ln, TokenTypeNames[t.tp]);
-            break;
-        } else if (t.tp == ERR) {
-            printf("< %s, %d, %s, %s, %s >\n", 
-                t.fl, t.ln, t.lx, TokenTypeNames[t.tp], ErrorTypeNames[t.ec]);
-        } else {
-            printf("< %s, %d, %s, %s >\n", 
-                t.fl, t.ln, t.lx, TokenTypeNames[t.tp]);
-        }
-    }
-    StopLexer();
-    return 0;
-}
-#endif

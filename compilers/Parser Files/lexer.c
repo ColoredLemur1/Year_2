@@ -67,6 +67,7 @@ int EatWC(){
                 if (c == '\n') LineCount++;
             }
             if (c == EOF) {
+                // End of file in comment
                 NextToken.tp = ERR;
                 NextToken.ec = EofInCom;
                 strcpy(NextToken.lx, "Error: End of file in comment");
@@ -134,14 +135,18 @@ Token GetNextToken ()
     strncpy(t.fl, FileName, sizeof(t.fl) - 1);
     t.fl[sizeof(t.fl) - 1] = '\0';
 
-    if (TokenReady){
-        TokenReady = 0;
-        return NextToken;
+    // Check if a token is already ready (peeked)
+    if (TokenReady) {
+        t = NextToken;       // Return the peeked token
+        TokenReady = 0;      // Clear the flag
+        return t;
     }
     
     if (f == NULL){
+        t.tp = EOFile; // Or ERR, depending on desired behavior
         return t;
     }
+
     //remove white space
     int c = EatWC();
 
@@ -239,4 +244,3 @@ int StopLexer ()
   LineCount = 1;   
   return 0;
 }
-

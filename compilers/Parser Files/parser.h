@@ -28,7 +28,7 @@ typedef enum {
 // if no errors are encountered er should be set to none
 typedef struct {
     SyntaxErrors er;    // Error type from the enumeration above
-    Token tk;             // Number of tokens parsed before the error occurred
+    int tk;             // Number of tokens parsed before the error occurred
     int ln;             // Line number where the error occurred 
     char fl[32];        // File where the error occurred
     char msg[128];      // Optional error message

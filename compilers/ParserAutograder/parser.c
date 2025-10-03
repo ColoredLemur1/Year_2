@@ -30,7 +30,7 @@ void factor(ParserInfo* pi);
 void term(ParserInfo* pi);
 
 
-const char* ErrorString(SyntaxErrors error) {
+const char* ErrorMessage(SyntaxErrors error) {
     switch (error) {
         case none: return "No error";
         case lexerErr: return "Lexer error";
@@ -56,10 +56,27 @@ int InitParser(char* file_name) {
     return InitLexer(file_name);
 }
 
+ParserInfo Parse() {
+    ParserInfo pi;
+    pi.er = none;
+    
+    // Initialize token with default values
+    pi.tk.tp = ERR;
+    pi.tk.ln = 0;
+    pi.tk.lx[0] = '\0';
+    pi.tk.fl[0] = '\0';
+    pi.tk.ec = NoLexErr;
+    
+    // Modify error() to not exit but store the error info
+    prog(&pi);
+    
+    return pi;
+}
+
 void error(ParserInfo* pi) {
     int line = pi->ln;
     SyntaxErrors error = pi->er;
-    const char* msg = ErrorString(error);
+    const char* msg = ErrorMessage(error);
     printf("Error at line %d, %s\n", line, msg);
     exit(1);
 }
@@ -749,33 +766,5 @@ void parseExpressionList(ParserInfo* pi){
 }
 
 int StopParser() {
-    StopLexer();
+   return StopLexer();
 }
-
-#ifdef TEST
-int main() 
-{
-
-    ParserInfo pi;
-    pi.er = none;
-    pi.ln = 0;
-    pi.tk = 0;
-
-
-    if (!InitParser("main.jack")) {
-        return 1;
-    }
-
-    prog(&pi);
-
-    if (pi.er != none) {
-        printf("Error: %s at line %d\n", ErrorString(pi.er), pi.ln);
-        StopParser();
-        return 1;
-    }
-
-    printf("Parsing completed successfully.\n");
-    StopParser();
-    return 0;
-}
-#endif 
