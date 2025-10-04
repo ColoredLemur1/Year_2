@@ -31,6 +31,9 @@ namespace
 
 	void glfw_cb_button_( GLFWwindow*, int, int, int );
 
+
+	std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>> clicked_pairs;
+
 	std::vector<std::pair<double, double>> clicked_pixels;
 
 	struct GLFWCleanupHelper
@@ -133,9 +136,11 @@ int main() try
 		surface.clear();
 
 		//TODO: drawing code goes here
-		for(auto const& pos : clicked_pixels)
+		for(auto const& pair : clicked_pairs)
 		{
-			surface.set_pixel_srgb( pos.first, pos.second, { 255, 255, 255 } );
+			auto const& p1 = pair.first;
+			auto const& p2 = pair.second;
+			draw_rectangle_solid(surface, {static_cast<float>(p1.first), static_cast<float>(p1.second)}, {static_cast<float>(p2.first), static_cast<float>(p2.second)}, {255, 0, 0});
 		}
 
 		context.draw( surface );
@@ -184,7 +189,20 @@ namespace
 		{
 			double x, y;
 			glfwGetCursorPos( aWindow, &x, &y );
-			clicked_pixels.emplace_back(x, y);
+
+			int windowHeight;
+			glfwGetWindowSize( aWindow, nullptr, &windowHeight );
+
+			double flippedY = windowHeight - y;
+			clicked_pixels.emplace_back(x, flippedY);
+
+			if (clicked_pixels.size() == 2)
+			{
+				clicked_pairs.emplace_back(clicked_pixels[0], clicked_pixels[1]);
+				clicked_pixels.clear();
+			}
+
+
 		}
 	}
 
