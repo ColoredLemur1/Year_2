@@ -15,9 +15,16 @@ bool clip_line( Rect2F const& aTargetArea, Vec2f& aBegin, Vec2f& aEnd )
 	//
 	// Return true to indicate that the line should be drawn and false that
 	// it should be discarded.
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	if (aBegin.x < aTargetArea.xmin && aEnd.x < aTargetArea.xmin) return false;
+	if (aBegin.x > aTargetArea.width && aEnd.x > aTargetArea.width) return false;
+	if (aBegin.y < aTargetArea.ymin && aEnd.y < aTargetArea.ymin) return false;
+	if (aBegin.y > aTargetArea.height && aEnd.y > aTargetArea.height) return false;
+
+	// Perform clipping
+	if (aBegin.x < aTargetArea.xmin) aBegin.x = aTargetArea.xmin;
+	if (aEnd.x > aTargetArea.width) aEnd.x = aTargetArea.width;
+	if (aBegin.y < aTargetArea.ymin) aBegin.y = aTargetArea.ymin;
+	if (aEnd.y > aTargetArea.height) aEnd.y = aTargetArea.height;
 
 	//TODO: remove the following when you start your implementation
 	(void)aTargetArea; // Avoid warnings about unused arguments until the function
@@ -29,15 +36,43 @@ bool clip_line( Rect2F const& aTargetArea, Vec2f& aBegin, Vec2f& aEnd )
 
 void draw_clip_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	float dx = aEnd.x - aBegin.x;
+	float dy = aEnd.y - aBegin.y;
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aBegin;   // is properly implemented.
-	(void)aEnd;
-	(void)aColor;
+	float steps = std::max(std::abs(dx), std::abs(dy));
+
+	// Handle the case of a single point
+	if (steps == 0)
+	{
+		int px = static_cast<int>(std::round(aBegin.x));
+		int py = static_cast<int>(std::round(aBegin.y));
+		if (px >= 0 && px < aSurface.get_width() && py >= 0 && py < aSurface.get_height())
+		{
+			aSurface.set_pixel_srgb(px, py, aColor);
+		}
+		return;
+	}
+
+	float x_inc = dx / steps;
+	float y_inc = dy / steps;
+
+	float x = aBegin.x;
+	float y = aBegin.y;
+
+	for (int i = 0; i <= static_cast<int>(steps); ++i)
+	{
+		int px = static_cast<int>(std::round(x));
+		int py = static_cast<int>(std::round(y));
+		
+		// Check bounds before drawing to prevent assertion failure
+		if (px >= 0 && px < aSurface.get_width() && py >= 0 && py < aSurface.get_height())
+		{
+			aSurface.set_pixel_srgb(px, py, aColor);
+		}
+
+		x += x_inc;
+		y += y_inc;
+	}
 }
 
 

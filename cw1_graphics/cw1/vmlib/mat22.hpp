@@ -29,9 +29,12 @@ struct Mat22f
 constexpr
 Mat22f operator*( Mat22f const& aLeft, Mat22f const& aRight ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	return Mat22f{
+		aLeft._00 * aRight._00 + aLeft._01 * aRight._10,
+		aLeft._00 * aRight._01 + aLeft._01 * aRight._11,
+		aLeft._10 * aRight._00 + aLeft._11 * aRight._10,
+		aLeft._10 * aRight._01 + aLeft._11 * aRight._11
+	};
 
 	//TODO: remove the following when you start your implementation
 	(void)aLeft; // Avoid warnings about unused arguments until the function
@@ -42,9 +45,10 @@ Mat22f operator*( Mat22f const& aLeft, Mat22f const& aRight ) noexcept
 constexpr
 Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	return Vec2f{
+		aLeft._00 * aRight.x + aLeft._01 * aRight.y,
+		aLeft._10 * aRight.x + aLeft._11 * aRight.y
+	};
 
 	//TODO: remove the following when you start your implementation
 	(void)aLeft; // Avoid warnings about unused arguments until the function
@@ -56,9 +60,13 @@ Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 inline
 Mat22f make_rotation_2d( float aAngle ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	float c = std::cos( aAngle );
+	float s = std::sin( aAngle );
+	
+	return Mat22f{
+		c, -s,
+		s,  c
+	};
 
 	//TODO: remove the following when you start your implementation
 	(void)aAngle; // Avoid warnings about unused arguments until the function

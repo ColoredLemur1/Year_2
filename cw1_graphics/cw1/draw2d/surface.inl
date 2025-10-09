@@ -43,5 +43,5 @@ Rect2F Surface::clip_area() const noexcept
 inline
 auto Surface::get_linear_index( Index aX, Index aY ) const noexcept -> Index
 {
-	return static_cast< Index >( aY * mWidth + aX ) * 4;
+	return ( aY * mWidth + aX ) * 4;
 }
