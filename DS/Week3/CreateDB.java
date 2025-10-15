@@ -38,8 +38,23 @@ public class CreateDB {
   {
     
     // Obtain access parameters and use them to create connection
-    //
-    //
+        // Obtain access parameters from environment variables
+    String dbServer = System.getenv("DB_SERVER");
+    String dbName = System.getenv("DB_NAME");
+    String dbUser = System.getenv("DB_USER");
+    String dbPassword = System.getenv("DB_PASSWORD");
+
+    if (dbServer == null || dbName == null || dbUser == null || dbPassword == null) {
+        throw new SQLException("Database credentials are not set in environment variables. Please set DB_SERVER, DB_NAME, DB_USER, and DB_PASSWORD.");
+    }
+
+    // Build the connection URL from the environment variables
+    String connectionUrl = String.format(
+        "jdbc:sqlserver://%s.database.windows.net:1433;database=%s;user=%s@%s;password=%s;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;",
+        dbServer, dbName, dbUser, dbServer, dbPassword);
+
+    // Establish the connection
+    Connection connection = DriverManager.getConnection(connectionUrl);
 
     return connection;
   }

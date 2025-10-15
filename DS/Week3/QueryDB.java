@@ -39,6 +39,22 @@ public class QueryDB {
     // Obtain access parameters and use them to create connection
     //
     //
+    String dbServer = System.getenv("DB_SERVER");
+    String dbName = System.getenv("DB_NAME");
+    String dbUser = System.getenv("DB_USER");
+    String dbPassword = System.getenv("DB_PASSWORD");
+
+    if (dbServer == null || dbName == null || dbUser == null || dbPassword == null) {
+        throw new SQLException("Database credentials are not set in environment variables. Please set DB_SERVER, DB_NAME, DB_USER, and DB_PASSWORD.");
+    }
+
+    // Build the connection URL from the environment variables
+    String connectionUrl = String.format(
+        "jdbc:sqlserver://%s.database.windows.net:1433;database=%s;user=%s@%s;password=%s;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;",
+        dbServer, dbName, dbUser, dbServer, dbPassword);
+
+    // Establish the connection
+    Connection connection = DriverManager.getConnection(connectionUrl);
 
     return connection;
   }
@@ -47,7 +63,6 @@ public class QueryDB {
 
   /**
    * Queries the database to find student names.
-   *
    * @param forename forename to search for in database
    * @param database connection to database
    * @throws SQLException if query fails
@@ -62,6 +77,33 @@ public class QueryDB {
     while (results.next()) {
       String surname = results.getString("surname");
       System.out.println(forename + " " + surname);
+    }
+    statement.close();
+  }
+
+  public static void listAllNames(Connection database)
+   throws SQLException
+  {
+    Statement statement = database.createStatement();
+    ResultSet results = statement.executeQuery(
+     "SELECT forename, surname FROM students");
+    while (results.next()) {
+      String forename = results.getString("forename");
+      String surname = results.getString("surname");
+      System.out.println(forename + " " + surname);
+    }
+    statement.close();
+  }
+
+  public static void countNames(Connection database)
+   throws SQLException
+  {
+    Statement statement = database.createStatement();
+    ResultSet results = statement.executeQuery(
+     "SELECT COUNT(*) AS total FROM students");
+    if (results.next()) {
+      int total = results.getInt("total");
+      System.out.println("Total students: " + total);
     }
     statement.close();
   }
@@ -82,7 +124,8 @@ public class QueryDB {
  
     try {
       connection = getConnection();
-      findNames(argv[0], connection);
+      listAllNames(connection);
+      countNames(connection);
     }
     catch (Exception error) {
       error.printStackTrace();
