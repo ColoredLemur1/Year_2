@@ -5,8 +5,8 @@
  /usr/include/bits/timesize.h /usr/include/sys/cdefs.h \
  /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h \
- /uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stddef.h \
- /uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/11/include/stddef.h \
+ /usr/lib/gcc/x86_64-redhat-linux/11/include/stdarg.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/bits/time64.h /usr/include/bits/types/__fpos_t.h \
  /usr/include/bits/types/__mbstate_t.h \
@@ -32,7 +32,7 @@
  /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
  /usr/include/strings.h glad/include/glad/glad.h \
  glad/include/KHR/khrplatform.h \
- /uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdint.h \
+ /usr/lib/gcc/x86_64-redhat-linux/11/include/stdint.h \
  /usr/include/stdint.h /usr/include/bits/wchar.h \
  /usr/include/bits/stdint-uintn.h /usr/include/dlfcn.h \
  /usr/include/bits/dlfcn.h
@@ -47,8 +47,8 @@
 /usr/include/bits/long-double.h:
 /usr/include/gnu/stubs.h:
 /usr/include/gnu/stubs-64.h:
-/uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stddef.h:
-/uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/11/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/11/include/stdarg.h:
 /usr/include/bits/types.h:
 /usr/include/bits/typesizes.h:
 /usr/include/bits/time64.h:
@@ -94,7 +94,7 @@
 /usr/include/strings.h:
 glad/include/glad/glad.h:
 glad/include/KHR/khrplatform.h:
-/uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdint.h:
+/usr/lib/gcc/x86_64-redhat-linux/11/include/stdint.h:
 /usr/include/stdint.h:
 /usr/include/bits/wchar.h:
 /usr/include/bits/stdint-uintn.h:

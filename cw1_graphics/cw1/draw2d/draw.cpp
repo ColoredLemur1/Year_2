@@ -90,18 +90,14 @@ void draw_line_solid( Surface& aSurface, Rect2F const& aClipArea, Vec2f aBegin, 
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	// This function is meant to draw a filled, color-interpolated triangle.
+	// For now, we are just drawing the wireframe outline using the vertex colors.
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;      // is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aC0;
-	(void)aC1;
-	(void)aC2;
+	// Draw the three lines that form the triangle's edges.
+	// Use linear_to_srgb() to convert ColorF to ColorU8_sRGB
+	draw_line_solid( aSurface, aP0, aP1, linear_to_srgb(aC0) );
+	draw_line_solid( aSurface, aP1, aP2, linear_to_srgb(aC1) );
+	draw_line_solid( aSurface, aP2, aP0, linear_to_srgb(aC2) );
 }
 
 // You are not required to implement the following, but they can be useful for
@@ -126,13 +122,44 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;   // is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aColor;
+	if (aP1.y < aP0.y) std::swap(aP0, aP1);
+	if (aP2.y < aP0.y) std::swap(aP0, aP2);
+	if (aP2.y < aP1.y) std::swap(aP1, aP2);
+
+	auto inv_slope = [](const Vec2f& p1, const Vec2f& p2) -> float {
+		float dy = p2.y - p1.y;
+		if (dy == 0) return 0;
+		return (p2.x - p1.x) / dy;
+	};
+
+	float inv_slope_0 = inv_slope(aP0, aP1);
+	float inv_slope_1 = inv_slope(aP0, aP2);
+
+	float currentx1 = aP0.x;
+	float currentx2 = aP0.x;
+
+	for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y) {
+		draw_line_solid(aSurface, Vec2f(currentx1, y), Vec2f(currentx2, y), aColor);
+
+		currentx1 += inv_slope_0;
+		currentx2 += inv_slope_1;
+	}
+
+	inv_slope_0 = inv_slope(aP1, aP2);
+	inv_slope_1 = inv_slope(aP0, aP2);
+
+	currentx1 = aP1.x;
+	currentx2 = aP0.x + inv_slope_1 * (aP1.y - aP0.y);
+
+	for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y) {
+		draw_line_solid(aSurface, Vec2f(currentx1, y), Vec2f(currentx2, y), aColor);
+
+		currentx1 += inv_slope_0;
+		currentx2 += inv_slope_1;
+	}
+
 }
+	
 
 void draw_rectangle_solid( Surface& aSurface, Vec2f aMinCorner, Vec2f aMaxCorner, ColorU8_sRGB aColor )
 {

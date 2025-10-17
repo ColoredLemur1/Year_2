@@ -6,7 +6,7 @@
  /usr/include/bits/timesize.h /usr/include/sys/cdefs.h \
  /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h \
- /uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stddef.h \
+ /usr/lib/gcc/x86_64-redhat-linux/11/include/stddef.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
  /usr/include/bits/floatn.h /usr/include/bits/floatn-common.h \
  /usr/include/sys/types.h /usr/include/bits/types.h \
@@ -24,7 +24,7 @@
  /usr/include/bits/pthreadtypes-arch.h /usr/include/bits/struct_mutex.h \
  /usr/include/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/bits/stdlib-float.h /usr/include/stdio.h \
- /uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/11/include/stdarg.h \
  /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
  /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
  /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
@@ -48,7 +48,7 @@ stb/include/stb_image_write.h:
 /usr/include/bits/long-double.h:
 /usr/include/gnu/stubs.h:
 /usr/include/gnu/stubs-64.h:
-/uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/11/include/stddef.h:
 /usr/include/bits/waitflags.h:
 /usr/include/bits/waitstatus.h:
 /usr/include/bits/floatn.h:
@@ -81,7 +81,7 @@ stb/include/stb_image_write.h:
 /usr/include/alloca.h:
 /usr/include/bits/stdlib-float.h:
 /usr/include/stdio.h:
-/uollinapps/.v2/v2/24-25/soc/packages/linux-rhel9-x86_64_v3/gcc-11.4.0/gcc-14.2.0-svuh5yskfnrwh537tvxvt642acswwlju/bin/../lib/gcc/x86_64-pc-linux-gnu/14.2.0/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/11/include/stdarg.h:
 /usr/include/bits/types/__fpos_t.h:
 /usr/include/bits/types/__mbstate_t.h:
 /usr/include/bits/types/__fpos64_t.h:
