@@ -92,12 +92,15 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 {
 	// This function is meant to draw a filled, color-interpolated triangle.
 	// For now, we are just drawing the wireframe outline using the vertex colors.
+	float area = 0.5f * std::abs((aP1.x - aP0.x) * (aP2.y - aP0.y) - (aP2.x - aP0.x) * (aP1.y - aP0.y));
+    if (area < 0.0001f) {
+        return; 
+    }
+
+	draw_triangle_solid(aSurface, aP0, aP1, aP2, linear_to_srgb(aC0));
 
 	// Draw the three lines that form the triangle's edges.
 	// Use linear_to_srgb() to convert ColorF to ColorU8_sRGB
-	draw_line_solid( aSurface, aP0, aP1, linear_to_srgb(aC0) );
-	draw_line_solid( aSurface, aP1, aP2, linear_to_srgb(aC1) );
-	draw_line_solid( aSurface, aP2, aP0, linear_to_srgb(aC2) );
 }
 
 // You are not required to implement the following, but they can be useful for
@@ -108,12 +111,9 @@ void draw_triangle_wireframe( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;   // is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aColor;
+	draw_line_solid( aSurface, aP0, aP1, aColor );
+	draw_line_solid( aSurface, aP1, aP2, aColor );
+	draw_line_solid( aSurface, aP2, aP0, aColor );
 }
 
 void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor )
