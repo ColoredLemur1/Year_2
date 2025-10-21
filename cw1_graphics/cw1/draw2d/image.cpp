@@ -54,9 +54,24 @@ void blit_masked( Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition )
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
-	(void)aSurface;  // Avoid warnings about unused arguments until the
-	(void)aImage;    // function is properly implemented.
-	(void)aPosition;
+	int width = aImage.get_width();
+	int height = aImage.get_height();
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			int posX = aPosition.x + x;
+			int posY = aPosition.y + y;
+
+			ColorU8_sRGB_Alpha pixel = aImage.get_pixel(x, y);
+
+			if (!(pixel.a == 0)) { // If alpha is not 0 (not fully transparent)
+				ColorU8_sRGB color = { pixel.r, pixel.g, pixel.b };
+				aSurface.set_pixel_srgb(posX, posY, color);
+			}
+
+		}
+	}
+
 }
 
 namespace

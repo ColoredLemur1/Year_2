@@ -19,10 +19,10 @@ endif
 # #############################################
 
 ifeq ($(origin CC), default)
-  CC = clang
+  CC = gcc
 endif
 ifeq ($(origin CXX), default)
-  CXX = clang++
+  CXX = g++
 endif
 ifeq ($(origin AR), default)
   AR = ar
@@ -32,9 +32,8 @@ INCLUDES += -Istb/include -Iglad/include -Iglfw/include -Icatch2/include -Ibench
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-LIBS += -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework QuartzCore
+LIBS += -lstdc++exp -ldl
 LDDEPS +=
-ALL_LDFLAGS += $(LDFLAGS) -m64 -pthread
 LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
 define PREBUILDCMDS
 endef
@@ -45,19 +44,21 @@ endef
 
 ifeq ($(config),debug_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libx-catch2-debug-x64-clang.a
-OBJDIR = ../_build_/debug-x64-clang/x64/debug/x-catch2
+TARGET = $(TARGETDIR)/libx-catch2-debug-x64-gcc.a
+OBJDIR = ../_build_/debug-x64-gcc/x64/debug/x-catch2
 DEFINES += -D_DEBUG=1 -DSOLUTION_CODE=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++23 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -pthread
 
 else ifeq ($(config),release_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libx-catch2-release-x64-clang.a
-OBJDIR = ../_build_/release-x64-clang/x64/release/x-catch2
+TARGET = $(TARGETDIR)/libx-catch2-release-x64-gcc.a
+OBJDIR = ../_build_/release-x64-gcc/x64/release/x-catch2
 DEFINES += -DNDEBUG=1 -DSOLUTION_CODE=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++23 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -pthread
 
 endif
 

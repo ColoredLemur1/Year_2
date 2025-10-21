@@ -1,14 +1,22 @@
 inline
 ColorU8_sRGB_Alpha ImageRGBA::get_pixel( Index aX, Index aY ) const
 {
-	assert( aX < mWidth && aY < mHeight ); // Leave this at the top of the function.
+	///assert( aX < mWidth && aY < mHeight ); // Leave this at the top of the function.
 
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
-	(void)aX;  // Avoid warnings about unused arguments until the function is
-	(void)aY;  // properly implemented.
-	return { 0, 0, 0, 0 }; //TODO: remove this line when you implement this
+	if (aX < 0 || aX >= mWidth || aY < 0 || aY >= mHeight) {
+		return ColorU8_sRGB_Alpha{0, 0, 0, 0}; // Return transparent
+	}
+	Index index = (aY * mWidth + aX) * 4;
+
+	uint8_t r = mData[index];
+	uint8_t g = mData[index + 1];
+	uint8_t b = mData[index + 2];
+	uint8_t a = mData[index + 3];
+
+	return ColorU8_sRGB_Alpha{ r, g, b, a };
 }
 
 inline
@@ -39,7 +47,5 @@ ImageRGBA::Index ImageRGBA::get_linear_index( Index aX, Index aY ) const noexcep
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
-	(void)aX;  // Avoid warnings about unused arguments until the function is
-	(void)aY;  // properly implemented.
-	return 0; //TODO: remove this line when you implement this function
+	return aY * mWidth + aX;
 }
