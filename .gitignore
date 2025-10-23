@@ -1,0 +1,25 @@
+# VS Code
+.vscode
+
+# Build directories
+_build_/
+build/
+bin/
+lib/
+*.o
+*.a
+*.exe
+
+# IDE files
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
