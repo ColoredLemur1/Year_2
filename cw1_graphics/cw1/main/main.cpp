@@ -214,10 +214,14 @@ int main( int aArgc, char* aArgv[] ) try
 		auto const dt = std::chrono::duration_cast<Secondsf>(now - lastUpdateTime).count();
 		lastUpdateTime = now;
 
-		state_update( state, dt );
+		// Only update if not paused
+		if( !state.paused )
+		{
+			state_update( state, dt );
 
-		background.update( state.player.position, state.thisFrame.movement );
-		asteroids.update( state.thisFrame.dt, state.thisFrame.movement );
+			background.update( state.player.position, state.thisFrame.movement );
+			asteroids.update( state.thisFrame.dt, state.thisFrame.movement );
+		}
 	
 		// Draw scene
 		surface.clear();
@@ -267,6 +271,13 @@ namespace
 
 		auto* state = static_cast<State*>(glfwGetWindowUserPointer( aWindow ));
 		assert( state );
+
+		// Toggle pause with 'P' key
+		if( GLFW_KEY_P == aKey && GLFW_PRESS == aAction )
+		{
+			state->paused = !state->paused;
+			return;
+		}
 
 		if( EInputMode::standard == state->inputMode )
 		{

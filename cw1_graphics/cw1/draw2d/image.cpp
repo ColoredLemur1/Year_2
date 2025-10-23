@@ -64,16 +64,25 @@ void blit_masked( Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition )
 			int posX = aPosition.x + x;
 			int posY = aPosition.y + y;
 
-			
+			// Check if destination is within surface bounds
 			if (posX >= 0 && posX < surfaceWidth && posY >= 0 && posY < surfaceHeight) {
-				// Check if source coordinates are within image bounds
-				if (x >= 0 && x < width && y >= 0 && y < height) {
-					ColorU8_sRGB_Alpha pixel = aImage.get_pixel(x, y);
-					if (!(pixel.a == 0)) { 
-						ColorU8_sRGB color = { pixel.r, pixel.g, pixel.b };
-						aSurface.set_pixel_srgb(posX, posY, color);
-					}
+				ColorU8_sRGB_Alpha pixel = aImage.get_pixel(x, y);
+				
+				if (pixel.a == 0) {
+					continue;
 				}
+				
+				// Alpha blending with black background (0, 0, 0)
+				
+				float alpha = pixel.a / 255.0f;
+				
+				std::uint8_t blendedR = static_cast<std::uint8_t>(pixel.r * alpha);
+				std::uint8_t blendedG = static_cast<std::uint8_t>(pixel.g * alpha);
+				std::uint8_t blendedB = static_cast<std::uint8_t>(pixel.b * alpha);
+				
+				ColorU8_sRGB blendedColor = { blendedR, blendedG, blendedB };
+				aSurface.set_pixel_srgb(posX, posY, blendedColor);
+				
 			}
 		}
 	}

@@ -189,14 +189,14 @@ int main( int aArgc, char* aArgv[] ) try
 		switch( testId )
 		{
 			case 1: {
-				// Centered triangle
+				// An upside-down triangle
 				draw_triangle_interp( surface, 
-					{ fbwidth/2.f, fbheight-100.f },
-					{ 100.f, 100.f },
-					{ fbwidth-100.f, 100.f },
-					{ 1.f, 1.f, 0.f },
-					{ 1.f, 0.f, 1.f },
-					{ 0.f, 1.f, 1.f }
+					{ 100.f, fbheight - 100.f },
+					{ 80.f, fbheight - 70.f },
+					{ fbwidth / 2.f, 100.f },
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 0.f, 0.f, 1.f }
 				);
 
 			} break;
@@ -227,6 +227,41 @@ int main( int aArgc, char* aArgv[] ) try
 
 			//TODO: your own sample cases here?
 			//TODO: your own sample cases here?
+			case 4: {
+				// Flat-bottom triangle
+				draw_triangle_interp( surface, 
+					{ fbwidth/2.f, fbheight-100.f }, // Top point
+					{ 100.f, 100.f },               // Bottom-left
+					{ fbwidth-100.f, 100.f },       // Bottom-right
+					{ 1.f, 1.f, 1.f },
+					{ 0.f, 0.f, 1.f },
+					{ 0.f, 1.f, 0.f }
+				);
+			} break;
+
+			case 5: {
+				// Flat-top triangle
+				draw_triangle_interp( surface, 
+					{ 100.f, fbheight-100.f },      // Top-left
+					{ fbwidth-100.f, fbheight-100.f},// Top-right
+					{ fbwidth/2.f, 100.f },         // Bottom point
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 1.f, 1.f, 1.f }
+				);
+			} break;
+
+			case 6: {
+				// Long, thin "sliver" triangle
+				draw_triangle_interp( surface, 
+					{ fbwidth/2.f, fbheight-50.f },
+					{ fbwidth/2.f + 20.f, 100.f },
+					{ fbwidth-50.f, fbheight-100.f },
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 0.f, 0.f, 1.f }
+				);
+			} break;
 		}
 		
 		context.draw( surface );

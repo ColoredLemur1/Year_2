@@ -98,6 +98,9 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
     }
 
 	draw_triangle_solid(aSurface, aP0, aP1, aP2, linear_to_srgb(aC0));
+	draw_triangle_solid(aSurface, aP1, aP2, aP0, linear_to_srgb(aC1));
+	draw_triangle_solid(aSurface, aP2, aP0, aP1, linear_to_srgb(aC2));
+	
 
 	// Draw the three lines that form the triangle's edges.
 	// Use linear_to_srgb() to convert ColorF to ColorU8_sRGB
@@ -122,6 +125,7 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 
+	// Sort vertices by y-coordinate (aP0.y <= aP1.y <= aP2.y)
 	if (aP1.y < aP0.y) std::swap(aP0, aP1);
 	if (aP2.y < aP0.y) std::swap(aP0, aP2);
 	if (aP2.y < aP1.y) std::swap(aP1, aP2);
@@ -135,24 +139,33 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 	float inv_slope_0 = inv_slope(aP0, aP1);
 	float inv_slope_1 = inv_slope(aP0, aP2);
 
-	float currentx1 = aP0.x;
-	float currentx2 = aP0.x;
+	
+	int startY = static_cast<int>(std::ceil(aP0.y));
+	int endY = static_cast<int>(std::ceil(aP1.y));
+	
+	
+	float currentx1 = aP0.x + inv_slope_0 * (startY - aP0.y);
+	float currentx2 = aP0.x + inv_slope_1 * (startY - aP0.y);
 
-	for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y) {
-		draw_line_solid(aSurface, Vec2f(currentx1, y), Vec2f(currentx2, y), aColor);
+	for (int y = startY; y < endY; ++y) {
+		draw_line_solid(aSurface, Vec2f(currentx1, static_cast<float>(y)), Vec2f(currentx2, static_cast<float>(y)), aColor);
 
 		currentx1 += inv_slope_0;
 		currentx2 += inv_slope_1;
 	}
 
+	// Second half: from aP1 to aP2
 	inv_slope_0 = inv_slope(aP1, aP2);
-	inv_slope_1 = inv_slope(aP0, aP2);
+	
+	startY = static_cast<int>(std::ceil(aP1.y));
+	endY = static_cast<int>(std::ceil(aP2.y));
 
-	currentx1 = aP1.x;
-	currentx2 = aP0.x + inv_slope_1 * (aP1.y - aP0.y);
+	
+	currentx1 = aP1.x + inv_slope_0 * (startY - aP1.y);
+	currentx2 = aP0.x + inv_slope_1 * (startY - aP0.y);
 
-	for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y) {
-		draw_line_solid(aSurface, Vec2f(currentx1, y), Vec2f(currentx2, y), aColor);
+	for (int y = startY; y < endY; ++y) {
+		draw_line_solid(aSurface, Vec2f(currentx1, static_cast<float>(y)), Vec2f(currentx2, static_cast<float>(y)), aColor);
 
 		currentx1 += inv_slope_0;
 		currentx2 += inv_slope_1;

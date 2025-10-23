@@ -15,6 +15,7 @@ enum class EInputMode
 struct State
 {
 	EInputMode inputMode = EInputMode::standard;
+	bool paused = false;
 
 	// "player" data
 	struct Player_
