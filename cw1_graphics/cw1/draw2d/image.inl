@@ -1,12 +1,12 @@
 inline
 ColorU8_sRGB_Alpha ImageRGBA::get_pixel( Index aX, Index aY ) const
 {
-	///assert( aX < mWidth && aY < mHeight ); // Leave this at the top of the function.
+	assert( aX < mWidth && aY < mHeight ); // Leave this at the top of the function.
 
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
-	if (aX < 0 || aX >= mWidth || aY < 0 || aY >= mHeight) {
+	if (aX < 0 || aY < 0) {
 		return ColorU8_sRGB_Alpha{0, 0, 0, 0}; // Return transparent
 	}
 	Index index = (aY * mWidth + aX) * 4;
