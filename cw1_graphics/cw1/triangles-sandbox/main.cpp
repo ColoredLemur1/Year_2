@@ -262,6 +262,18 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 0.f, 0.f, 1.f }
 				);
 			} break;
+
+			case 7: {
+				//triangle that gets clipped halfway to the right
+				draw_triangle_interp( surface, 
+					{ fbwidth - 50.f, fbheight - 50.f },
+					{ fbwidth / 2.f, 100.f },
+					{ fbwidth + 100.f, fbheight - 100.f },
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 0.f, 0.f, 1.f }
+				);
+			}
 		}
 		
 		context.draw( surface );

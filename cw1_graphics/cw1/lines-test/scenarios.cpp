@@ -6,6 +6,8 @@
 
 #include "../draw2d/surface.hpp"
 #include "../draw2d/draw.hpp"
+// scenario 1 :clipped lines partially offscreen
+
 TEST_CASE( "Partially offscreen", "[scenarios]" ){
 	Surface surface( 100, 100 );
 	surface.clear();
@@ -166,6 +168,7 @@ TEST_CASE( "Partially offscreen", "[scenarios]" ){
 		REQUIRE( pixels > 0 ); 
 	}
 }
+// scenario 2 :thin lines (no thickness greater than 1 pixel in any direction)
 TEST_CASE( "Thin lines", "[scenarios]" ){
     Surface surface( 100, 100 );
     surface.clear();
@@ -193,7 +196,7 @@ TEST_CASE( "Thin lines", "[scenarios]" ){
         REQUIRE( max_col_pixel_count( surface ) > 1 );
     }
     //diagonal line that chnages more in the x direction than the y direction
-    SECTION( "x-major" ){
+    SECTION( "slanted low" ){
         draw_line_solid( surface,
             { 10.f, 20.f },
             { 90.f, 40.f },
@@ -204,7 +207,7 @@ TEST_CASE( "Thin lines", "[scenarios]" ){
         REQUIRE( 1 == max_col_pixel_count( surface ) );
     }
     //diagonal line that chnages more in the y direction than the x direction
-    SECTION( "y-major" ){
+    SECTION( "slanted high" ){
         draw_line_solid( surface,
             { 50.f, 10.f },
             { 40.f, 90.f },
@@ -226,6 +229,7 @@ TEST_CASE( "Thin lines", "[scenarios]" ){
         REQUIRE( 1 == max_col_pixel_count( surface ) );
     }
 }
+// scenario 3 :no gaps between two connected lines that are drawn one after the other
 TEST_CASE( "No gaps", "[scenarios]" ){
     Surface surface( 100, 100 );
     surface.clear();
@@ -233,49 +237,73 @@ TEST_CASE( "No gaps", "[scenarios]" ){
     //test all the no gaps cases
     SECTION( "horizontal" ){
         draw_line_solid( surface,
-            { 10.f, 50.f },
-            { 90.f, 50.f },
+            { 1.f, 50.f },
+            { 50.f, 50.f },
             { 255, 255, 255 }
         );
+		draw_line_solid( surface,
+			{ 50.f, 50.f },
+			{ 99.f, 50.f },
+			{ 255, 255, 255 }
+		);
 
-        REQUIRE( max_row_pixel_count( surface ) > 1 );
-        REQUIRE( 1 == max_col_pixel_count( surface ) );
+		auto const counts = count_pixel_neighbours( surface );
+		REQUIRE( 2 == counts[1] );
+		REQUIRE( counts[2] > 0 );
+		REQUIRE( 0 == counts[0] );
+		for( std::size_t i = 3; i < counts.size(); ++i ){
+			REQUIRE( 0 == counts[i]  );
+		}
     }
     SECTION( "vertical" ){
         draw_line_solid( surface,
-            { 50.f, 10.f },
-            { 50.f, 90.f },
+            { 50.f, 1.f },
+            { 50.f, 50.f },
             { 255, 255, 255 }
         );
-
+		draw_line_solid( surface,
+			{ 50.f, 50.f },
+			{ 50.f, 99.f },
+			{ 255, 255, 255 }
+		);
         auto const counts = count_pixel_neighbours( surface );
         REQUIRE( 2 == counts[1] );
         REQUIRE( counts[2] > 0 );
         REQUIRE( 0 == counts[0] );
-        for( std::size_t i = 3; i < counts.size(); ++i )
+        for( std::size_t i = 3; i < counts.size(); ++i ){
             REQUIRE( 0 == counts[i]  );
+        }
     }
     SECTION( "diagonal" ){
         draw_line_solid( surface,
-            { 10.f, 10.f },
-            { 90.f, 90.f },
+            { 1.f, 1.f },
+            { 50.f, 50.f },
             { 255, 255, 255 }
         );
-
+		draw_line_solid( surface,
+			{ 50.f, 50.f },
+			{ 99.f, 99.f },
+			{ 255, 255, 255 }
+		);
         auto const counts = count_pixel_neighbours( surface );
         REQUIRE( 2 == counts[1] );
         REQUIRE( counts[2] > 0 );
         REQUIRE( 0 == counts[0] );
-        for( std::size_t i = 3; i < counts.size(); ++i )
+        for( std::size_t i = 3; i < counts.size(); ++i ){
             REQUIRE( 0 == counts[i]  );
+        }
     }
     SECTION( "slanted high" ){
         draw_line_solid( surface,
-            { 10.f, 10.f },
-            { 10.f, 90.f },
+            { 1.f, 1.f },
+            { 4.f, 50.f },
             { 255, 255, 255 }
         );
-
+		draw_line_solid( surface,
+			{ 4.f, 50.f },
+			{ 7.f, 99.f },
+			{ 255, 255, 255 }
+		);
         auto const counts = count_pixel_neighbours( surface );
         REQUIRE( 2 == counts[1] );
         REQUIRE( counts[2] > 0 );
@@ -285,10 +313,15 @@ TEST_CASE( "No gaps", "[scenarios]" ){
     }
     SECTION( "slanted low" ){
         draw_line_solid( surface,
-            { 10.f, 90.f },
-            { 10.f, 10.f },
+            { 1.f, 1.f },
+            { 50.f, 4.f },
             { 255, 255, 255 }
         );
+		draw_line_solid( surface,
+			{ 50.f, 4.f },
+			{ 99.f, 7.f },
+			{ 255, 255, 255 }
+		);
 
         auto const counts = count_pixel_neighbours( surface );
         REQUIRE( 2 == counts[1] );
@@ -298,22 +331,108 @@ TEST_CASE( "No gaps", "[scenarios]" ){
             REQUIRE( 0 == counts[i]  );
     }
 }
+// scenario 4 :comparing identical lines drawn in reverse order
+TEST_CASE( "Reversed lines", "[scenarios]" ){
+	Surface surface1( 100, 100 );
+	surface1.clear();
 
-TEST_CASE( "Special cases", "[scenarios]" ){
-    Surface surface( 100, 100 );
-    surface.clear();
+	Surface surface2( 100, 100 );
+	surface2.clear();
 
-    //test all the special cases
-    SECTION( "zero length" ){
-        draw_line_solid( surface,
-            { 10.f, 10.f },
-            { 10.f, 10.f },
-            { 255, 255, 255 }
-        );
+	SECTION( "horizontal p1 inside->outside p2 outside->inside" ) {
+		draw_line_solid( surface1,
+			{ -10.f, 50.f },
+			{ 90.f, 50.f },
+			{ 255, 255, 255 }
+		);
 
-        auto const counts = count_pixel_neighbours( surface );
-        REQUIRE( 0 == counts[0] );
-        for( std::size_t i = 1; i < counts.size(); ++i )
-            REQUIRE( 0 == counts[i]  );
-    }
+		draw_line_solid( surface2,
+			{ 90.f, 50.f },
+			{ -10.f, 50.f },
+			{ 255, 255, 255 }
+		);
+
+		auto const pixels1 = max_col_pixel_count( surface1 );
+		auto const pixels2 = max_col_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
+	SECTION("horizontal p1 outside->inside p2 inside->outside"){
+		draw_line_solid( surface1,
+			{ 10.f, 50.f },
+			{ 110.f, 50.f },
+			{ 255, 255, 255 }
+		);
+
+		draw_line_solid( surface2,
+			{ 110.f, 50.f },
+			{ 10.f, 50.f },
+			{ 255, 255, 255 }
+		);
+
+		auto const pixels1 = max_col_pixel_count( surface1 );
+		auto const pixels2 = max_col_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
+	SECTION("vertical p1 inside->outside p2 outside->inside"){
+		draw_line_solid( surface1,
+			{ 50.f, -10.f },
+			{ 50.f, 90.f },
+			{ 255, 255, 255 }
+		);
+
+		draw_line_solid( surface2,
+			{ 50.f, 90.f },
+			{ 50.f, -10.f },
+			{ 255, 255, 255 }
+		);
+
+		auto const pixels1 = max_row_pixel_count( surface1 );
+		auto const pixels2 = max_row_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
+	SECTION("vertical p1 outside->inside p2 inside->outside"){
+		draw_line_solid( surface1,
+			{ 50.f, 10.f },
+			{ 50.f, 110.f },
+			{ 255, 255, 255 }
+		);
+		draw_line_solid( surface2,
+			{ 50.f, 110.f },
+			{ 50.f, 10.f },
+			{ 255, 255, 255 }
+		);
+		auto const pixels1 = max_row_pixel_count( surface1 );
+		auto const pixels2 = max_row_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
+	SECTION("diagonal p1 inside->outside p2 outside->inside"){
+		draw_line_solid( surface1,
+			{ -10.f, -10.f },
+			{ 90.f, 90.f },
+			{ 255, 255, 255 }
+		);
+		draw_line_solid( surface2,
+			{ 90.f, 90.f },
+			{ -10.f, -10.f },
+			{ 255, 255, 255 }
+		);
+		auto const pixels1 = max_row_pixel_count( surface1 );
+		auto const pixels2 = max_row_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
+	SECTION("diagonal p1 outside->inside p2 inside->outside"){
+		draw_line_solid( surface1,
+			{ 10.f, 10.f },
+			{ 110.f, 110.f },
+			{ 255, 255, 255 }
+		);
+		draw_line_solid( surface2,
+			{ 110.f, 110.f },
+			{ 10.f, 10.f },
+			{ 255, 255, 255 }
+		);
+		auto const pixels1 = max_row_pixel_count( surface1 );
+		auto const pixels2 = max_row_pixel_count( surface2 );
+		REQUIRE( pixels1 == pixels2 );
+	}
 }
