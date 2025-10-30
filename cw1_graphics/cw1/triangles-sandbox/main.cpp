@@ -273,7 +273,57 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 0.f, 1.f, 0.f },
 					{ 0.f, 0.f, 1.f }
 				);
-			}
+			} break;
+
+			case 8: {
+				// Winding-order invariance (example 1): forward vs reversed, side-by-side
+				float const halfW = fbwidth / 2.f;
+				// Left (forward order)
+				Vec2f p0L{ halfW * 0.5f - 30.f, fbheight * 0.5f + 30.f };
+				Vec2f p1L{ halfW * 0.5f - 30.f, fbheight * 0.5f - 30.f };
+				Vec2f p2L{ halfW * 0.5f + 30.f, fbheight * 0.5f - 30.f };
+				draw_triangle_interp( surface,
+					p0L, p1L, p2L,
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 0.f, 0.f, 1.f }
+				);
+
+				// Right (reversed order, same vertex colors matched to vertices)
+				Vec2f p0R{ p0L.x + halfW, p0L.y };
+				Vec2f p1R{ p1L.x + halfW, p1L.y };
+				Vec2f p2R{ p2L.x + halfW, p2L.y };
+				draw_triangle_interp( surface,
+					p2R, p1R, p0R,
+					{ 0.f, 0.f, 1.f },
+					{ 0.f, 1.f, 0.f },
+					{ 1.f, 0.f, 0.f }
+				);
+			} break;
+
+			case 9: {
+				// Winding-order invariance (example 2): different oblique triangle
+				float const halfW = fbwidth / 2.f;
+				Vec2f q0L{ halfW * 0.5f - 10.f, fbheight * 0.5f + 40.f };
+				Vec2f q1L{ halfW * 0.5f - 40.f, fbheight * 0.5f - 20.f };
+				Vec2f q2L{ halfW * 0.5f + 35.f, fbheight * 0.5f - 10.f };
+				draw_triangle_interp( surface,
+					q0L, q1L, q2L,
+					{ 1.f, 1.f, 0.f },
+					{ 0.f, 1.f, 1.f },
+					{ 1.f, 0.f, 1.f }
+				);
+
+				Vec2f q0R{ q0L.x + halfW, q0L.y };
+				Vec2f q1R{ q1L.x + halfW, q1L.y };
+				Vec2f q2R{ q2L.x + halfW, q2L.y };
+				draw_triangle_interp( surface,
+					q2R, q1R, q0R,
+					{ 1.f, 0.f, 1.f },
+					{ 0.f, 1.f, 1.f },
+					{ 1.f, 1.f, 0.f }
+				);
+			} break;
 		}
 		
 		context.draw( surface );
