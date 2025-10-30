@@ -223,19 +223,28 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 1.f, 0.f, 1.f },
 					{ 0.f, 1.f, 1.f }
 				);
+				
 			} break;
 
 			//TODO: your own sample cases here?
 			//TODO: your own sample cases here?
 			case 4: {
 				// Flat-bottom triangle
-				draw_triangle_interp( surface, 
-					{ fbwidth/2.f, fbheight-100.f }, // Top point
-					{ 100.f, 100.f },               // Bottom-left
-					{ fbwidth-100.f, 100.f },       // Bottom-right
-					{ 1.f, 1.f, 1.f },
-					{ 0.f, 0.f, 1.f },
-					{ 0.f, 1.f, 0.f }
+				draw_triangle_interp( surface,
+					{ 10.f, 90.f },
+					{ 10.f, 10.f },
+					{ 90.f, 10.f },
+					{ 0.5f, 0.5f, 0.5f },
+					{ 0.5f, 0.5f, 0.5f },
+					{ 0.5f, 0.5f, 0.5f }
+				);
+				draw_triangle_interp( surface,
+					{ 90.f, 10.f }, 
+					{ 90.f, 90.f }, 
+					{ 10.f, 90.f },
+					{ 0.5f, 0.5f, 0.5f },
+					{ 0.5f, 0.5f, 0.5f },
+					{ 0.5f, 0.5f, 0.5f }
 				);
 			} break;
 

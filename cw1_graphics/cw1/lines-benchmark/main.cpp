@@ -29,8 +29,8 @@ namespace
 }
 
 BENCHMARK( placeholder_ )
-	->Args( { 1920, 1080 } )
-	->Args( { 7680, 4320 } )
+	->Args( { 11920, 1080 } )
+	->Args( { 17680, 4320 } )
 ;
 
 

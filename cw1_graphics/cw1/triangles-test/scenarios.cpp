@@ -6,7 +6,7 @@
 #include "../draw2d/draw.hpp"
 
 // Scenario A: ensure two triangles can fill a rectangle without any gaps
-TEST_CASE( "No seam between adjacent triangles", "[triangles][scenarios]" )
+TEST_CASE( "No seam between adjacent triangles", "[scenarios]" )
 {
 	Surface surface( 100, 100 );
 	surface.clear();
@@ -37,7 +37,7 @@ TEST_CASE( "No seam between adjacent triangles", "[triangles][scenarios]" )
 }
 
 // Scenario B: triangles drawn with different edge orders should produce the same result
-TEST_CASE( "Winding-order invariance", "[triangles][scenarios]" )
+TEST_CASE( "Winding-order invariance", "[scenarios]" )
 {
 	Surface surfaceA( 100, 100 );
 	surfaceA.clear();
