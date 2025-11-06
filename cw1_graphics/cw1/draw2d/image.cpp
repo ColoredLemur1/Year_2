@@ -51,42 +51,64 @@ std::unique_ptr<ImageRGBA> load_image( char const* aPath )
 
 void blit_masked( Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	// Get dimensions of the image and the surface
 	int width = aImage.get_width();
 	int height = aImage.get_height();
 	int surfaceWidth = aSurface.get_width();
 	int surfaceHeight = aSurface.get_height();
 
-	for (int y = 0; y < height; ++y) {
-		for (int x = 0; x < width; ++x) {
-			int posX = aPosition.x + x;
-			int posY = aPosition.y + y;
+	// rectangular clipping is used to get the visible region of the image on the surface
+	int imgStartX = static_cast<int>(aPosition.x);
+	int imgStartY = static_cast<int>(aPosition.y);
+	int imgEndX = imgStartX + width;
+	int imgEndY = imgStartY + height;
 
-			// Check if destination is within surface bounds
-			if (posX >= 0 && posX < surfaceWidth && posY >= 0 && posY < surfaceHeight) {
-				ColorU8_sRGB_Alpha pixel = aImage.get_pixel(x, y);
-				
-				if (pixel.a == 0) {
-					continue;
-				}
-				
-				// Alpha blending with black background (0, 0, 0)
-				
-				float alpha = pixel.a / 255.0f;
-				
-				std::uint8_t blendedR = static_cast<std::uint8_t>(pixel.r * alpha);
-				std::uint8_t blendedG = static_cast<std::uint8_t>(pixel.g * alpha);
-				std::uint8_t blendedB = static_cast<std::uint8_t>(pixel.b * alpha);
-				
-				ColorU8_sRGB blendedColor = { blendedR, blendedG, blendedB };
-				aSurface.set_pixel_srgb(posX, posY, blendedColor);
-				
-			}
-		}
+	// clip the image to the surface bounds
+	int clipStartX = std::max(0, imgStartX);
+	int clipStartY = std::max(0, imgStartY);
+	int clipEndX = std::min(surfaceWidth, imgEndX);
+	int clipEndY = std::min(surfaceHeight, imgEndY);
+
+	// if the image is off the surface exit the function
+	if (clipStartX >= clipEndX || clipStartY >= clipEndY) {
+		return; 
 	}
 
+	// calculate the source image offsets (where to start reading from image)
+	int srcOffsetX = clipStartX - imgStartX;
+	int srcOffsetY = clipStartY - imgStartY;
+	int clipWidth = clipEndX - clipStartX;
+	int clipHeight = clipEndY - clipStartY;
+
+	// iterate only over the visible region no per-pixel bounds checks needed for performance
+	for (int y = 0; y < clipHeight; ++y) {
+		for (int x = 0; x < clipWidth; ++x) {
+			// coordinates of the pixel in the source image
+			int srcX = srcOffsetX + x;
+			int srcY = srcOffsetY + y;
+
+			// get the color of the pixel from the source image
+			ColorU8_sRGB_Alpha pixel = aImage.get_pixel(srcX, srcY);
+			
+			// if the pixel is transparent skip it
+			if (pixel.a == 0) {
+				continue;
+			}
+			
+			// Alpha blending with black background (0, 0, 0)
+			float alpha = pixel.a / 255.0f;
+			
+			// Perform alpha blending
+			std::uint8_t blendedR = static_cast<std::uint8_t>(pixel.r * alpha);
+			std::uint8_t blendedG = static_cast<std::uint8_t>(pixel.g * alpha);
+			std::uint8_t blendedB = static_cast<std::uint8_t>(pixel.b * alpha);
+			
+			ColorU8_sRGB blendedColor = { blendedR, blendedG, blendedB };
+			
+			// Draw the pixel at the clipped position
+			aSurface.set_pixel_srgb(clipStartX + x, clipStartY + y, blendedColor);
+		}
+	}
 }
 
 namespace

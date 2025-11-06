@@ -27,21 +27,20 @@ bool clip_line( Rect2F const& aTargetArea, Vec2f& aBegin, Vec2f& aEnd )
 	if (aEnd.y > aTargetArea.height) aEnd.y = aTargetArea.height;
 
 	//TODO: remove the following when you start your implementation
-	(void)aTargetArea; // Avoid warnings about unused arguments until the function
-	(void)aBegin;      // is properly implemented.
-	(void)aEnd;
 
 	return true;
 }
 
 void draw_clip_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
+	//difference in x and y coordinates
 	float dx = aEnd.x - aBegin.x;
 	float dy = aEnd.y - aBegin.y;
 
+	//step size
 	float steps = std::max(std::abs(dx), std::abs(dy));
 
-	// Handle the case of a single point
+	// Handle the case of zero length line (one point)
 	if (steps == 0)
 	{
 		int px = static_cast<int>(std::round(aBegin.x));
@@ -59,17 +58,21 @@ void draw_clip_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_
 	float x = aBegin.x;
 	float y = aBegin.y;
 
+	//for loop to draw the line
 	for (int i = 0; i <= static_cast<int>(steps); ++i)
 	{
+		//round the x and y coordinates to the nearest integer
 		int px = static_cast<int>(std::round(x));
 		int py = static_cast<int>(std::round(y));
 		
-		// Check bounds before drawing to prevent assertion failure
+		// Check bounds before drawinge
 		if (px >= 0 && px < aSurface.get_width() && py >= 0 && py < aSurface.get_height())
 		{
+			//draw the pixel
 			aSurface.set_pixel_srgb(px, py, aColor);
 		}
 
+		//increment the x and y coordinates by the step size
 		x += x_inc;
 		y += y_inc;
 	}
@@ -90,47 +93,59 @@ void draw_line_solid( Surface& aSurface, Rect2F const& aClipArea, Vec2f aBegin, 
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
 {
-	// This function is meant to draw a filled, color-interpolated triangle.
-	// For now, we are just drawing the wireframe outline using the vertex colors.
+	//calculates if a point is within the triangle
+	//0 is on the edge, positive is outside, negative is inside
 	auto edge = []( Vec2f const& a, Vec2f const& b, float x, float y ) -> float {
         return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
     };
-    float area2 = edge( aP0, aP1, aP2.x, aP2.y ); // 2x area (signed)
+
+    float area2 = edge( aP0, aP1, aP2.x, aP2.y ); // 2x area
+	//this is necessary to avoid degenerate triangles
     if( std::abs( area2 ) < 1e-6f )
-        return; // degenerate
+        return; 
+	//determines the orientation of the triangle
+	//1 is counter-clockwise, -1 is clockwise
     float orient = (area2 >= 0.f) ? 1.f : -1.f;
-    float invArea2 = orient / area2; // equals 1 / |area2|
+    float invArea2 = orient / area2; 
+
+	//calcuulates the smallest possible rectangle that contains the triangle
     int minX = (int)std::floor( std::min( std::min( aP0.x, aP1.x ), aP2.x ) );
     int maxX = (int)std::ceil ( std::max( std::max( aP0.x, aP1.x ), aP2.x ) );
     int minY = (int)std::floor( std::min( std::min( aP0.y, aP1.y ), aP2.y ) );
     int maxY = (int)std::ceil ( std::max( std::max( aP0.y, aP1.y ), aP2.y ) );
+
+	//we clip the rectangle to the surface bounds
     minX = std::max( 0, minX );
     minY = std::max( 0, minY );
     maxX = std::min( (int)aSurface.get_width(),  maxX );
     maxY = std::min( (int)aSurface.get_height(), maxY );
+
+	//iterates through the rectangle and checks if the point is within the triangle
     for( int y = minY; y < maxY; ++y )
     {
         for( int x = minX; x < maxX; ++x )
         {
-            // Pixel center sampling
+            //uses the edge function point by point to check if the point is within the triangle
             float px = x + 0.5f;
             float py = y + 0.5f;
             float w0 = orient * edge( aP1, aP2, px, py );
             float w1 = orient * edge( aP2, aP0, px, py );
             float w2 = orient * edge( aP0, aP1, px, py );
-            // Inside if all are non-negative (top-left style omitted for simplicity)
+            
             if( w0 >= 0.f && w1 >= 0.f && w2 >= 0.f )
             {
-                // Normalize to barycentric in [0,1]
+                //normalizes the barycentric coordinates in range [0,1]
                 float b0 = w0 * invArea2;
                 float b1 = w1 * invArea2;
                 float b2 = w2 * invArea2;
-                ColorF cLin{
+				//calculates the color of the point
+                ColorF linearColor{
                     b0 * aC0.r + b1 * aC1.r + b2 * aC2.r,
                     b0 * aC0.g + b1 * aC1.g + b2 * aC2.g,
                     b0 * aC0.b + b1 * aC1.b + b2 * aC2.b
                 };
-                aSurface.set_pixel_srgb( x, y, linear_to_srgb( cLin ) );
+				//draws the pixel
+                aSurface.set_pixel_srgb( x, y, linear_to_srgb( linearColor ) );
             }
         }
     }

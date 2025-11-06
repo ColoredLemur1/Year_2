@@ -20,7 +20,13 @@ void Surface::set_pixel_srgb( Index aX, Index aY, ColorU8_sRGB const& aColor )
 	mSurface[linearIndex + 0] = aColor.r;
 	mSurface[linearIndex + 1] = aColor.g;
 	mSurface[linearIndex + 2] = aColor.b;
-	mSurface[linearIndex + 3] = 0;
+	mSurface[linearIndex + 3] = 0; //padding to make the pixel 32 bits
+}
+
+inline
+auto Surface::get_linear_index( Index aX, Index aY ) const noexcept -> Index
+{
+	return ( aY * mWidth + aX ) * 4;
 }
 
 inline 
@@ -38,10 +44,4 @@ inline
 Rect2F Surface::clip_area() const noexcept
 {
 	return Rect2F{ 0.f, 0.f, float(mWidth), float(mHeight) };
-}
-
-inline
-auto Surface::get_linear_index( Index aX, Index aY ) const noexcept -> Index
-{
-	return ( aY * mWidth + aX ) * 4;
 }

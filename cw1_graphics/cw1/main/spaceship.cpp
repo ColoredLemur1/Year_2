@@ -75,10 +75,40 @@ LineStrip make_spaceship_shape()
 		{ 0.2f * xs[0], 0.2f * +ys[5] } // link back to beginning (connects both sides at the "front")
 	} };
 #	elif SPACESHIP == SPACESHIP_CUSTOM
-	LineStrip spaceship{ {
-
-		// TODO: YOUR DESIGN GOES HERE
+	// Regular octagon spaceship design - all 8 sides equal length
+	// xs[] values: front (positive) to back (negative)  
+	// ys[] values: widths - adjusted to create equal-length sides
+	// Bottom center adjusted to prevent flat bottom effect
+	static constexpr float xs[] = { 400.f, 300.f, 200.f, 100.f, 530.f, 380.f, 450.f };
+	static constexpr float ys[] = { 100.f, 200.f, 80.f, 50.f, 30.f, 180.f, 130.f};
 	
+	LineStrip spaceship{ {
+		{ 0.2f * xs[0], 0.2f * +ys[3] },
+		{ 0.2f * xs[4], 0.2f * +ys[3] },
+		{ 0.2f * xs[4], 0.2f * +ys[2] },
+		{ 0.2f * xs[0], 0.2f * +ys[0] },
+		{ 0.2f * xs[1], 0.2f * +ys[1] },
+		{ 0.2f * xs[2], 0.2f * +ys[1] },
+		{ 0.2f * xs[3], 0.2f * +ys[0] },
+
+		{ 0.2f * xs[3], 0.2f * -ys[0] },
+		{ 0.2f * xs[2], 0.2f * -ys[1] },
+		{ 0.2f * xs[1], 0.2f * -ys[1] },
+
+		{ 0.2f * xs[5], 0.2f * -ys[5] },
+		{ 0.2f * xs[6], 0.2f * -ys[5] },
+		{ 0.2f * xs[6], 0.2f * -ys[6] },
+		{ 0.2f * xs[5], 0.2f * -ys[6] },
+
+		{ 0.2f * xs[0], 0.2f * -ys[0] },
+
+		
+		{ 0.2f * xs[4], 0.2f * -ys[2] },
+		{ 0.2f * xs[4], 0.2f * -ys[3] },
+		{ 0.2f * xs[0], 0.2f * -ys[3] },
+
+		{ 0.2f * xs[0], 0.2f * +ys[3] },
+
 	} };
 #	endif
 

@@ -68,12 +68,22 @@ TEST_CASE( "Winding-order invariance", "[scenarios]" )
 		{ 1.f, 0.f, 0.f }
 	);
 
-	auto const mostRedA = find_most_red_pixel( surfaceA );
-	auto const mostRedB = find_most_red_pixel( surfaceB );
-	REQUIRE( mostRedA.r == mostRedB.r );
+	// Pixel-by-pixel comparison: verify both surfaces are identical
+	// This is more thorough than checking just max/min values
+	auto const stride = surfaceA.get_width() << 2;
+	for( std::uint32_t y = 0; y < surfaceA.get_height(); ++y )
+	{
+		for( std::uint32_t x = 0; x < surfaceA.get_width(); ++x )
+		{
+			auto const idx = y*stride + (x<<2);
+			auto const ptrA = surfaceA.get_surface_ptr() + idx;
+			auto const ptrB = surfaceB.get_surface_ptr() + idx;
 
-	auto const leastRedA = find_least_red_nonzero_pixel( surfaceA );
-	auto const leastRedB = find_least_red_nonzero_pixel( surfaceB );
-	REQUIRE( leastRedA.r == leastRedB.r );
+			// Compare RGB values (ignore padding byte)
+			REQUIRE( ptrA[0] == ptrB[0] ); // Red
+			REQUIRE( ptrA[1] == ptrB[1] ); // Green
+			REQUIRE( ptrA[2] == ptrB[2] ); // Blue
+		}
+	}
 }
 

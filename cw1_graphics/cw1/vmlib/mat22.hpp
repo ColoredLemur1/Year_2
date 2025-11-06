@@ -37,9 +37,6 @@ Mat22f operator*( Mat22f const& aLeft, Mat22f const& aRight ) noexcept
 	};
 
 	//TODO: remove the following when you start your implementation
-	(void)aLeft; // Avoid warnings about unused arguments until the function
-	(void)aRight;  // is properly implemented.
-	return Mat22f{ 1.f, 0.f, 0.f, 1.f };
 }
 
 constexpr
@@ -51,8 +48,6 @@ Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 	};
 
 	//TODO: remove the following when you start your implementation
-	(void)aLeft; // Avoid warnings about unused arguments until the function
-	return aRight;
 }
 
 // Functions:
@@ -69,9 +64,6 @@ Mat22f make_rotation_2d( float aAngle ) noexcept
 	};
 
 	//TODO: remove the following when you start your implementation
-	(void)aAngle; // Avoid warnings about unused arguments until the function
-	              // is properly implemented.
-	return Mat22f{ 1.f, 0.f, 0.f, 1.f };
 }
 
 #endif // MAT22_HPP_1F974C02_D0D1_4FBD_B5EE_A69C88112088

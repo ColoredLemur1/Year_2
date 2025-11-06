@@ -9,7 +9,7 @@ ColorU8_sRGB_Alpha ImageRGBA::get_pixel( Index aX, Index aY ) const
 	if (aX < 0 || aY < 0) {
 		return ColorU8_sRGB_Alpha{0, 0, 0, 0}; // Return transparent
 	}
-	Index index = (aY * mWidth + aX) * 4;
+	Index index = get_linear_index(aX, aY);
 
 	uint8_t r = mData[index];
 	uint8_t g = mData[index + 1];
@@ -47,5 +47,6 @@ ImageRGBA::Index ImageRGBA::get_linear_index( Index aX, Index aY ) const noexcep
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
 	//TODO: your implementation goes here
-	return aY * mWidth + aX;
+	// Each pixel is 4 bytes (RGBA), so multiply pixel index by 4 to get byte index
+	return (aY * mWidth + aX) * 4;
 }
