@@ -40,7 +40,7 @@
 #define SPACESHIP_CUSTOM 2
 
 #ifndef SPACESHIP
-#	define SPACESHIP SPACESHIP_DEFAULT
+#	define SPACESHIP SPACESHIP_CUSTOM
 #endif
 
 LineStrip make_spaceship_shape()

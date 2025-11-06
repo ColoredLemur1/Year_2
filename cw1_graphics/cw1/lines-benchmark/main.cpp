@@ -6,106 +6,82 @@
 
 namespace
 {
-	// This is the function that will be used to benchmark the line drawing operation
-	//replace this with your own code.
-
-	// Benchmark to test if color affects line drawing performance
+	// Benchmark: draw N lines of a given length and color on a 2D surface.
+	// Parameters (via aState.range):
+	//   0: width  (keep 1920)
+	//   1: height (keep 1080)
+	//   2: line length (pixels)
+	//   3: color index (0-7)
+	//   4: number of lines
 	void draw_line_benchmark_( benchmark::State& aState )
 	{
-		auto const width = std::uint32_t(aState.range(0)); // width of the surface
-		auto const height = std::uint32_t(aState.range(1)); // height of the surface
-		auto const lineLength = std::uint32_t(aState.range(2)); // length of the line
-		
-		// index colors (0-7) the input is the index and the output is the color
+		auto const width      = std::uint32_t(aState.range(0));
+		auto const height     = std::uint32_t(aState.range(1));
+		auto const lineLength = std::uint32_t(aState.range(2));
+		auto const numLines   = std::uint32_t(aState.range(4));
+
+		// Indexed colors (0-7)
 		static constexpr ColorU8_sRGB colors[] = {
-			{255, 0, 0},    // Red
-			{0, 255, 0},    // Green
-			{0, 0, 255},    // Blue
-			{255, 255, 255}, // White
-			{0, 0, 0},      // Black
-			{255, 255, 0},  // Yellow
-			{0, 255, 255},  // Cyan
-			{255, 0, 255}   // Magenta
+			{255, 0, 0},     // 0 Red
+			{0, 255, 0},     // 1 Green
+			{0, 0, 255},     // 2 Blue
+			{255, 255, 255}, // 3 White
+			{0, 0, 0},       // 4 Black
+			{255, 255, 0},   // 5 Yellow
+			{0, 255, 255},   // 6 Cyan
+			{255, 0, 255}    // 7 Magenta
 		};
 		auto const colorIndex = std::uint32_t(aState.range(3)) % (sizeof(colors) / sizeof(colors[0]));
-		auto const color = colors[colorIndex];
+		auto const color      = colors[colorIndex];
 
 		SurfaceEx surface( width, height );
 		surface.clear();
 
-		// Draw a horizontal line starting from the center-left of the surface
-		Vec2f begin{ width / 4.0f, height / 2.0f };
-		Vec2f end{ begin.x + lineLength, begin.y };
+		// Base X so lines start somewhere near the left-middle area
+		float const baseX = std::max(0.0f, (width - std::min(lineLength, width)) * 0.25f);
 
 		for( auto _ : aState )
 		{
-			draw_line_solid( surface, begin, end, color );
+			// Draw numLines horizontal lines at different Y positions; wrap if needed
+			for( std::uint32_t i = 0; i < numLines; ++i )
+			{
+				float const y = float(i % std::max<std::uint32_t>(1, height));
+				Vec2f begin{ baseX, y };
+				Vec2f end{ begin.x + float(lineLength), y };
+				draw_line_solid( surface, begin, end, color );
+			}
 
-			// ClobberMemory() ensures that the compiler won't optimize away
-			// our line drawing operation. (Unlikely, but technically possible.)
-			benchmark::ClobberMemory(); 
+			// Prevent over-optimization of the draw calls
+			benchmark::ClobberMemory();
 		}
 	}
 }
 
-
-
-
-// Test cases testing the 3 variables:
-// Variable 1: Surface Area (width x height)
-// Variable 2: Line Length
-// Variable 3: Line Color
-
-// Small surface area (640x360)
+// Benchmark cases at fixed resolution 1920x1080 varying:
+//  - line length
+//  - line color
+//  - number of lines
+// Args are: { width, height, length, colorIndex, numLines }
 BENCHMARK( draw_line_benchmark_ )
-	->Args( { 640, 360, 10, 0 } )   // short line, red
-	->Args( { 640, 360, 100, 0 } )  // medium line, red
-	->Args( { 640, 360, 500, 0 } )  // long line, red
-	->Args( { 640, 360, 100, 1 } )  // medium line, green
-	->Args( { 640, 360, 100, 2 } )  // medium line, blue
-	->Args( { 640, 360, 100, 3 } )  // medium line, white
-	->Args( { 640, 360, 100, 4 } )  // medium line, black
-;
-
-// Medium surface area (1920x1080)
-BENCHMARK( draw_line_benchmark_ )
-	->Args( { 1920, 1080, 10, 0 } )   // short line, red
-	->Args( { 1920, 1080, 100, 0 } )  // medium line, red
-	->Args( { 1920, 1080, 500, 0 } )  // long line, red
-	->Args( { 1920, 1080, 1000, 0 } ) // very long line, red
-	->Args( { 1920, 1080, 5000, 0 } ) // extremely long line, red
-	->Args( { 1920, 1080, 100, 1 } )  // medium line, green
-	->Args( { 1920, 1080, 100, 2 } )  // medium line, blue
-	->Args( { 1920, 1080, 100, 3 } )  // medium line, white
-	->Args( { 1920, 1080, 100, 4 } )  // medium line, black
-	->Args( { 1920, 1080, 1000, 1 } ) // long line, green
-	->Args( { 1920, 1080, 1000, 3 } ) // long line, white
-;
-
-// Large surface area (3840x2160)
-BENCHMARK( draw_line_benchmark_ )
-	->Args( { 3840, 2160, 10, 0 } )   // short line, red
-	->Args( { 3840, 2160, 100, 0 } )  // medium line, red
-	->Args( { 3840, 2160, 500, 0 } )  // long line, red
-	->Args( { 3840, 2160, 1000, 0 } ) // very long line, red
-	->Args( { 3840, 2160, 5000, 0 } ) // extremely long line, red
-	->Args( { 3840, 2160, 100, 1 } )  // medium line, green
-	->Args( { 3840, 2160, 100, 2 } )  // medium line, blue
-	->Args( { 3840, 2160, 100, 3 } )  // medium line, white
-	->Args( { 3840, 2160, 100, 4 } )  // medium line, black
-;
-
-// Very large surface area (7680x4320)
-BENCHMARK( draw_line_benchmark_ )
-	->Args( { 7680, 4320, 10, 0 } )   // short line, red
-	->Args( { 7680, 4320, 100, 0 } )  // medium line, red
-	->Args( { 7680, 4320, 500, 0 } )  // short line, red
-	->Args( { 7680, 4320, 1000, 0 } ) // long line, red
-	->Args( { 7680, 4320, 5000, 0 } ) // extremely long line, red
-	->Args( { 7680, 4320, 100, 1 } )  // medium line, green
-	->Args( { 7680, 4320, 100, 2 } )  // medium line, blue
-	->Args( { 7680, 4320, 100, 3 } )  // medium line, white
-	->Args( { 7680, 4320, 100, 4 } )  // medium line, black
+	// Vary line length with modest number of lines
+	->Args( { 1920, 1080, 10,   0, 100 } )
+	->Args( { 1920, 1080, 100,  0, 100 } )
+	->Args( { 1920, 1080, 500,  0, 100 } )
+	->Args( { 1920, 1080, 1000, 0, 100 } )
+	// Vary color (same length, same count)
+	->Args( { 1920, 1080, 500,  0, 100 } )
+	->Args( { 1920, 1080, 500,  1, 100 } )
+	->Args( { 1920, 1080, 500,  2, 100 } )
+	->Args( { 1920, 1080, 500,  3, 100 } )
+	->Args( { 1920, 1080, 500,  4, 100 } )
+	->Args( { 1920, 1080, 500,  5, 100 } )
+	->Args( { 1920, 1080, 500,  6, 100 } )
+	->Args( { 1920, 1080, 500,  7, 100 } )
+	// Vary number of lines (work scaling)
+	->Args( { 1920, 1080, 500,  0,    1 } )
+	->Args( { 1920, 1080, 500,  0,   10 } )
+	->Args( { 1920, 1080, 500,  0,  100 } )
+	->Args( { 1920, 1080, 500,  0, 1000 } )
 ;
 
 
