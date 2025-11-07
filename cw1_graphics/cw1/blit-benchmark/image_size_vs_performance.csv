@@ -1,0 +1,16 @@
+Image Size (pixels),CPU Time (ns),Algorithm
+256x256,834759,blit_masked
+256x256,261791,blit_ex_solid
+256x256,111288,blit_ex_memcpy
+384x384,926731,blit_masked
+384x384,287132,blit_ex_solid
+384x384,121832,blit_ex_memcpy
+512x512,1012356,blit_masked
+512x512,312975,blit_ex_solid
+512x512,132622,blit_ex_memcpy
+768x768,1146055,blit_masked
+768x768,364271,blit_ex_solid
+768x768,154839,blit_ex_memcpy
+1024x1024,1183630,blit_masked
+1024x1024,394286,blit_ex_solid
+1024x1024,168776,blit_ex_memcpy

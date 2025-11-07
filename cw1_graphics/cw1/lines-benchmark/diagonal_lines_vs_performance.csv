@@ -1,0 +1,17 @@
+CPU Time (ns),Line Length (pixels),Algorithm
+4041,10,DDA
+27981,100,DDA
+134538,500,DDA
+266742,1000,DDA
+115343,5000,DDA
+1977,10,Bresenham
+10820,100,Bresenham
+49161,500,Bresenham
+98032,1000,Bresenham
+207623,5000,Bresenham
+554,10,Baseline
+4480,100,Baseline
+26202,500,Baseline
+53686,1000,Baseline
+0,5000,Baseline
+

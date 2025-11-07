@@ -1,0 +1,16 @@
+Resolution,CPU Time (ns),Algorithm
+1920x1080,834759,blit_masked
+1920x1080,261791,blit_ex_solid
+1920x1080,111288,blit_ex_memcpy
+2560x1440,1069453,blit_masked
+2560x1440,336282,blit_ex_solid
+2560x1440,141326,blit_ex_memcpy
+3840x2160,1194705,blit_masked
+3840x2160,391041,blit_ex_solid
+3840x2160,168992,blit_ex_memcpy
+5120x2880,1179203,blit_masked
+5120x2880,388608,blit_ex_solid
+5120x2880,172818,blit_ex_memcpy
+7680x4320,1186215,blit_masked
+7680x4320,389654,blit_ex_solid
+7680x4320,168072,blit_ex_memcpy

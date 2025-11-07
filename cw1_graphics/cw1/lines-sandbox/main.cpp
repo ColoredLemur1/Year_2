@@ -5,11 +5,14 @@
 #include <random>
 #include <typeinfo>
 #include <stdexcept>
+#include <algorithm>
 
 #include <cstdlib>
 
 #include "../draw2d/surface.hpp"
+#include "../draw2d/surface-ex.hpp"
 #include "../draw2d/draw.hpp"
+#include "../draw2d/draw-ex.hpp"
 #include "../draw2d/shape.hpp"
 
 #include "../support/error.hpp"
@@ -132,6 +135,7 @@ int main( int aArgc, char* aArgv[] ) try
 
 	Context context( fbwidth, fbheight );
 	Surface surface( fbwidth, fbheight );
+	SurfaceEx surfaceEx( fbwidth, fbheight );
 
 	glViewport( 0, 0, iwidth, iheight );
 
@@ -177,6 +181,7 @@ int main( int aArgc, char* aArgv[] ) try
 				// Resize things
 				context.resize( fbwidth, fbheight );
 				surface = Surface( fbwidth, fbheight );
+				surfaceEx = SurfaceEx( fbwidth, fbheight );
 			}
 		}
 
@@ -185,23 +190,19 @@ int main( int aArgc, char* aArgv[] ) try
 
 		// Draw scene
 		surface.clear();
+		surfaceEx.clear();
 
 		switch( testId )
 		{
 			case 1: {
-				// Just a diagonal line
-				/*draw_line_solid( surface, 
-					{ 100.f, 100.f}, { fbwidth-100.f, fbheight-100.f },
-					{ 255, 255, 0 }
-				);*/
+				// DDA: Just a diagonal line
 				draw_line_solid( surface, 
 					{ 0.f, 0.f}, { float(fbwidth), float(fbheight) },
 					{ 255, 255, 0 }
 				);
-
 			} break;
 			case 2: {
-				// Just a diagonal line, "reverse"
+				// DDA: Just a diagonal line, "reverse"
 				draw_line_solid( surface, 
 					{ fbwidth-100.f, fbheight-100.f }, { 100.f, 100.f}, 
 					{ 255, 255, 0 }
@@ -209,7 +210,7 @@ int main( int aArgc, char* aArgv[] ) try
 			} break;
 
 			case 3: {
-				// Completely off-screen -- you should not see anything, but
+				// DDA: Completely off-screen -- you should not see anything, but
 				// your program should also not crash/assert.
 				draw_line_solid( surface, 
 					{ fbwidth+10.f, fbheight/2.f }, { fbwidth+100.f, fbheight/2.f },
@@ -217,18 +218,89 @@ int main( int aArgc, char* aArgv[] ) try
 				);
 			} break;
 			case 4: {
-				// Extends out of screen
+				// DDA: Extends out of screen
 				draw_line_solid( surface, 
 					{ fbwidth/2.f, fbheight/2.f }, { fbwidth+10.f, fbheight/2.f },
 					{ 255, 255, 0 }
 				);
 			} break;
-
-			//TODO: your own sample cases here?
-			//TODO: your own sample cases here?
+			
+			case 5: {
+				// Bresenham: Diagonal line (same as test 1)
+				draw_ex_line_solid( surfaceEx,
+					{ 0.f, 0.f }, { float(fbwidth), float(fbheight) },
+					{ 0, 255, 255 } // Cyan
+				);
+			} break;
+			
+			case 6: {
+				// Bresenham: Horizontal line
+				draw_ex_line_solid( surfaceEx,
+					{ 100.f, fbheight/2.f }, { float(fbwidth-100), fbheight/2.f },
+					{ 255, 0, 255 } // Magenta
+				);
+			} break;
+			
+			case 7: {
+				// Bresenham: Vertical line
+				draw_ex_line_solid( surfaceEx,
+					{ fbwidth/2.f, 100.f }, { fbwidth/2.f, float(fbheight-100) },
+					{ 0, 255, 0 } // Green
+				);
+			} break;
+			
+			case 8: {
+				// Bresenham: Shallow positive slope
+				draw_ex_line_solid( surfaceEx,
+					{ 100.f, 100.f }, { float(fbwidth-100), 200.f },
+					{ 255, 128, 0 } // Orange
+				);
+			} break;
+			
+			case 9: {
+				// Bresenham: Steep positive slope
+				draw_ex_line_solid( surfaceEx,
+					{ 100.f, 100.f }, { 200.f, float(fbheight-100) },
+					{ 128, 0, 255 } // Purple
+				);
+			} break;
+			
+			case 0: {
+				// Bresenham: Multiple lines in different directions
+				// Center point
+				float cx = fbwidth / 2.f;
+				float cy = fbheight / 2.f;
+				float radius = std::min(fbwidth, fbheight) * 0.4f;
+				
+				// Draw lines from center in 8 directions
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx + radius, cy }, { 255, 0, 0 } ); // Right (red)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx - radius, cy }, { 0, 255, 0 } ); // Left (green)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx, cy + radius }, { 0, 0, 255 } ); // Down (blue)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx, cy - radius }, { 255, 255, 0 } ); // Up (yellow)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx + radius*0.707f, cy + radius*0.707f }, { 255, 0, 255 } ); // Down-right (magenta)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx - radius*0.707f, cy + radius*0.707f }, { 0, 255, 255 } ); // Down-left (cyan)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx + radius*0.707f, cy - radius*0.707f }, { 255, 128, 0 } ); // Up-right (orange)
+				draw_ex_line_solid( surfaceEx, { cx, cy }, { cx - radius*0.707f, cy - radius*0.707f }, { 128, 0, 255 } ); // Up-left (purple)
+			} break;
+			
+			case 10: {
+				// draw_ex_diagonal: Simple diagonal line (baseline - fastest for 45-degree lines)
+				// Draw from top-left, going down-right
+				float startX = 100.f;
+				float startY = 100.f;
+				float numPixels = std::min(fbwidth - startX, fbheight - startY) - 50.f; // Ensure it fits
+				
+				draw_ex_diagonal( surfaceEx,
+					{ startX, startY },
+					numPixels,
+					{ 255, 255, 255 } // White
+				);
+			} break;
 		}
 		
+		// Draw both surfaces (SurfaceEx can be drawn via Context since it inherits from Surface)
 		context.draw( surface );
+		context.draw( surfaceEx );
 
 		// Display results
 		glfwSwapBuffers( window );
@@ -282,6 +354,7 @@ namespace
 				case GLFW_KEY_8: select = 8; break;
 				case GLFW_KEY_9: select = 9; break;
 				case GLFW_KEY_0: select = 0; break;
+				case GLFW_KEY_D: select = 10; break; // 'D' for diagonal baseline
 				default: select = *testid; break;
 			}
 

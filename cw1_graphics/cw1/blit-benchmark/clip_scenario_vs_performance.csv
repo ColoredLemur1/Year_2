@@ -1,0 +1,16 @@
+Clip Scenario,CPU Time (ns),Algorithm
+Center (0),1009899,blit_masked
+Center (0),313293,blit_ex_solid
+Center (0),133240,blit_ex_memcpy
+Light (1),144365,blit_masked
+Light (1),60013,blit_ex_solid
+Light (1),27985,blit_ex_memcpy
+Partial (2),38400,blit_masked
+Partial (2),26734,blit_ex_solid
+Partial (2),7974,blit_ex_memcpy
+Heavy (3),6834,blit_masked
+Heavy (3),6501,blit_ex_solid
+Heavy (3),1991,blit_ex_memcpy
+Very Heavy (4),1025,blit_masked
+Very Heavy (4),1130,blit_ex_solid
+Very Heavy (4),340,blit_ex_memcpy

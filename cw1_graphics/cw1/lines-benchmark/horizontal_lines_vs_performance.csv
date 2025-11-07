@@ -1,0 +1,12 @@
+CPU Time (ns),Line Length (pixels),Algorithm
+4042,10,DDA
+27549,100,DDA
+132255,500,DDA
+263520,1000,DDA
+513871,5000,DDA
+1634,10,Bresenham
+7109,100,Bresenham
+33001,500,Bresenham
+64347,1000,Bresenham
+186531,5000,Bresenham
+

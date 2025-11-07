@@ -31,13 +31,19 @@ def create_linear_comparison_graph(file_path):
 
     # 2. Calculate and Plot Ideal Linear Line
     
-    # Get the coordinates for the largest data point (X_max, Y_max)
-    X_max = df[X_COLUMN_NAME].max()
-    Y_max = df[Y_COLUMN_NAME].max()
+    # Get the first data point to calculate the gradient (scaling factor)
+    X_first = df[X_COLUMN_NAME].iloc[0]
+    Y_first = df[Y_COLUMN_NAME].iloc[0]
     
-    # Define the coordinates for the Ideal O(n) line: starts at (0, 0) and ends at (X_max, Y_max)
+    # Calculate the gradient (time per unit) from the first data point
+    gradient = Y_first / X_first
+    
+    # Get the maximum X value to extend the O(n) line
+    X_max = df[X_COLUMN_NAME].max()
+    
+    # Define the coordinates for the Ideal O(n) line: starts at (0, 0) with gradient from first point
     ideal_x = [0, X_max]
-    ideal_y = [0, Y_max]
+    ideal_y = [0, gradient * X_max]
 
     # Plot the Ideal Linear Line
     plt.plot(ideal_x, ideal_y, 

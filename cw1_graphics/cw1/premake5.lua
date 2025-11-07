@@ -226,6 +226,27 @@ project "triangles-test"
 
 	links "x-catch2"
 
+project "blit-sandbox"
+	local sources = { 
+		"blit-sandbox/**.cpp",
+		"blit-sandbox/**.hpp",
+		"blit-sandbox/**.hxx",
+		"blit-sandbox/**.inl"
+	}
+
+	kind "ConsoleApp"
+	location "blit-sandbox"
+
+	files( sources )
+
+	links "vmlib"
+	links "support"
+	links "draw2d"
+
+	links "x-stb"
+	links "x-glad"
+	links "x-glfw"
+
 project "blit-benchmark"
 	local sources = { 
 		"blit-benchmark/**.cpp",
