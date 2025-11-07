@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/test_dataset.dir/test_dataset.cpp.o CMakeFiles/test_dataset.dir/quake.cpp.o CMakeFiles/test_dataset.dir/dataset.cpp.o -o test_dataset  -lpthread 
