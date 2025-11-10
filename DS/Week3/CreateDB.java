@@ -76,7 +76,7 @@ public class CreateDB {
     // Drop existing table, if present
 
     try {
-      statement.executeUpdate("DROP TABLE students");
+      statement.executeUpdate("DROP TABLE sensors");
     }
     catch (SQLException error) {
       // Catch and ignore SQLException, as this merely indicates
@@ -85,10 +85,12 @@ public class CreateDB {
 
     // Create a fresh table
 
-    statement.executeUpdate("CREATE TABLE students ("
-                          + "user_id CHAR(8) NOT NULL PRIMARY KEY,"
-                          + "surname VARCHAR(30) NOT NULL,"
-                          + "forename VARCHAR(20) NOT NULL)");
+    statement.executeUpdate("CREATE TABLE sensors ("
+                          + "sensor_id INT NOT NULL PRIMARY KEY,"
+                          + "temperature INT NOT NULL,"
+                          + "windspeed INT NOT NULL,"
+                          + "relative_humidity INT NOT NULL,"
+                          + "CO2 INT NOT NULL)");
 
     statement.close();
   }
@@ -109,27 +111,31 @@ public class CreateDB {
     // Prepare statement used to insert data
 
     PreparedStatement statement =
-     database.prepareStatement("INSERT INTO students VALUES(?,?,?)");
+     database.prepareStatement("INSERT INTO sensors VALUES(?,?,?,?,?)");
 
     // Loop over input data, inserting it into table...
  
     while (true) {
 
-      // Obtain user ID, surname and forename from input file
+      // Obtain sensor_id, temperature, windspeed, relative_humidity, CO2 from input file
 
       String line = in.readLine();
       if (line == null)
         break;
       StringTokenizer parser = new StringTokenizer(line,",");
-      String userID = parser.nextToken();
-      String surname = parser.nextToken();
-      String forename = parser.nextToken();
+      int sensorID = Integer.parseInt(parser.nextToken());
+      int temperature = Integer.parseInt(parser.nextToken());
+      int windspeed = Integer.parseInt(parser.nextToken());
+      int relativeHumidity = Integer.parseInt(parser.nextToken());
+      int CO2 = Integer.parseInt(parser.nextToken());
 
       // Insert data into table
 
-      statement.setString(1, userID);
-      statement.setString(2, surname);
-      statement.setString(3, forename);
+      statement.setInt(1, sensorID);
+      statement.setInt(2, temperature);
+      statement.setInt(3, windspeed);
+      statement.setInt(4, relativeHumidity);
+      statement.setInt(5, CO2);
       statement.executeUpdate();
 
     }
