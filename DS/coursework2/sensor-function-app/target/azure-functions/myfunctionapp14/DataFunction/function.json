@@ -1,0 +1,15 @@
+{
+  "scriptFile" : "../sensor-function-app-1.0-SNAPSHOT.jar",
+  "entryPoint" : "Year_2.DS.coursework2.Function.run",
+  "bindings" : [ {
+    "type" : "httpTrigger",
+    "direction" : "in",
+    "name" : "req",
+    "methods" : [ "GET", "POST" ],
+    "authLevel" : "ANONYMOUS"
+  }, {
+    "type" : "http",
+    "direction" : "out",
+    "name" : "$return"
+  } ]
+}
