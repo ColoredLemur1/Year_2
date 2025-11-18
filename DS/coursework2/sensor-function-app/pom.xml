@@ -80,10 +80,10 @@
                     <!-- <disableAppInsights></disableAppInsights> -->
                     <!-- Runtime section - commented out to avoid conflicts with existing Function App -->
                     <!-- The Function App is already configured with Java 21 in Azure Portal -->
-                    <!-- <runtime>
+                    <runtime>
                         <os>linux</os>
                         <javaVersion>21</javaVersion>
-                    </runtime> -->
+                    </runtime>
                     <appSettings>
                         <property>
                             <name>FUNCTIONS_EXTENSION_VERSION</name>

@@ -10,12 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom; // Used for generating random data
+import java.time.LocalDateTime;
 
 /**
  * Azure Function for COMP3211 Coursework 2, Task 1.
  * This function simulates sensor data and writes it to an Azure SQL Database.
+ * Triggered by a timer every 10 seconds.
  */
 public class Function {
 
@@ -34,20 +35,13 @@ public class Function {
     private static final String INSERT_SQL =
         "INSERT INTO sensors (sensor_id, temperature, windspeed, relative_humidity, CO2) VALUES (?, ?, ?, ?, ?)";
 
-    /**
-     * This function simulates data for 20 sensors and inserts it into the database.
-     * It is triggered by an HTTP request.
-     */
-    @FunctionName("DataFunction") // Renamed from "HttpExample" to be more descriptive
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                name = "req",
-                methods = {HttpMethod.GET, HttpMethod.POST},
-                authLevel = AuthorizationLevel.ANONYMOUS) // Kept as ANONYMOUS for easy testing
-            HttpRequestMessage<Optional<String>> request,
+    
+    @FunctionName("DataFunction")
+    public void run(
+            @TimerTrigger(name = "timerInfo", schedule = "*/10 * * * * *") String timerInfo,
             final ExecutionContext context) {
         
-        context.getLogger().info("Java HTTP trigger 'DataFunction' processed a request.");
+        context.getLogger().info("Timer trigger 'DataFunction' executed at: " + LocalDateTime.now());
 
         // --- Main Logic: Try-with-resources for DB connection and statement ---
         try (Connection connection = getConnection(context)) {
@@ -91,16 +85,8 @@ public class Function {
             // Catch generic Exception to handle SQL or IO errors
             context.getLogger().severe("Error inserting sensor data: " + e.getMessage());
             // Print the stack trace to the Function App's logs for debugging
-            e.printStackTrace(); 
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                          .body("Error inserting sensor data: " + e.getMessage())
-                          .build();
+            e.printStackTrace();
         }
-
-        // --- Success Response ---
-        return request.createResponseBuilder(HttpStatus.OK)
-                      .body("Successfully inserted data for " + SENSOR_COUNT + " sensors.")
-                      .build();
     }
 
     /**
