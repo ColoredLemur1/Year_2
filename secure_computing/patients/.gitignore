@@ -1,0 +1,41 @@
+# Gradle build files
+build/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Gradle wrapper (if you want each machine to use local gradle installation)
+# Uncomment these lines if you want to ignore the wrapper:
+# gradlew
+# gradlew.bat
+# gradle/wrapper/
+
+# Java compiled class files
+*.class
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Operating system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Application specific
+*.log
+*.tmp
+
+# Database files (optional - uncomment if you want to ignore the database)
+# *.db
+# *.sqlite3
+
