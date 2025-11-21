@@ -10,18 +10,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.ThreadLocalRandom; // Used for generating random data
+import java.util.concurrent.ThreadLocalRandom; 
 import java.time.LocalDateTime;
 
 /**
- * Azure Function for COMP3211 Coursework 2, Task 1.
- * This function simulates sensor data and writes it to an Azure SQL Database.
- * Triggered by a timer every 10 seconds.
+ * Azure Function for COMP3211 Coursework 2, Task 3.
+ * This function simulates sensor data and writes it to the database every 10 seconds based on the enviroment variable
+ * This function also inserts a log into the PerformanceMetrics table to track the start and end times of the batch.
  */
 public class Function {
 
-    
-    private static final int SENSOR_COUNT = 20; //
     private static final int TEMP_MIN = 5;
     private static final int TEMP_MAX = 18;
     private static final int WIND_MIN = 12;
@@ -31,9 +29,11 @@ public class Function {
     private static final int CO2_MIN = 400;
     private static final int CO2_MAX = 1600;
 
-   
     private static final String INSERT_SQL =
         "INSERT INTO sensors (sensor_id, temperature, windspeed, relative_humidity, CO2) VALUES (?, ?, ?, ?, ?)";
+    
+    private static final String LOG_START_SQL =
+        "INSERT INTO PerformanceMetrics (sensor_count, start_time) VALUES (?, SYSUTCDATETIME())";
 
     
     @FunctionName("DataFunction")
@@ -43,69 +43,66 @@ public class Function {
         
         context.getLogger().info("Timer trigger 'DataFunction' executed at: " + LocalDateTime.now());
 
-        // --- Main Logic: Try-with-resources for DB connection and statement ---
+        // Read the number of readings per sensor from the environment variable
+        String sensorCountEnv = System.getenv("TEST_SENSOR_COUNT");
+        int sensorCount = Integer.parseInt(sensorCountEnv);
+        context.getLogger().info("Processing " + sensorCount + " sensors (from TEST_SENSOR_COUNT=" + sensorCountEnv + ")");
+
+        // try to connect to the database and log the start of the sensor
         try (Connection connection = getConnection(context)) {
             context.getLogger().info("Database connection established.");
 
-            // Get the next available sensor_id to avoid primary key violations
+            // log the start of the sensor
+            try (PreparedStatement logStartStatement = connection.prepareStatement(LOG_START_SQL)) {
+                logStartStatement.setInt(1, sensorCount);
+                logStartStatement.executeUpdate();
+                context.getLogger().info("Logged batch start with sensor_count: " + sensorCount);
+            }
+
+            // get the next available sensor_id to avoid primary key violations
             int nextSensorId = resolveNextSensorId(connection, context);
             context.getLogger().info("Starting sensor_id from: " + nextSensorId);
 
-            // Use a PreparedStatement for batch inserts, which is much faster
             try (PreparedStatement insertStatement = connection.prepareStatement(INSERT_SQL)) {
                 
-                // Loop 20 times, once for each sensor as per the spec
-                // Start from the next available sensor_id
-                for (int i = 0; i < SENSOR_COUNT; i++) {
+                // Loop sensorCount times, once for each sensor reading
+                for (int i = 0; i < sensorCount; i++) {
                     int sensorId = nextSensorId + i;
                     
-                    // 1. Generate random data based on the ranges in the PDF
+                    // randomise the values for the sensor reading
                     int temp = getRandomNumber(TEMP_MIN, TEMP_MAX);
                     int wind = getRandomNumber(WIND_MIN, WIND_MAX);
                     int humidity = getRandomNumber(HUMIDITY_MIN, HUMIDITY_MAX);
                     int co2 = getRandomNumber(CO2_MIN, CO2_MAX);
 
-                    // 2. Set parameters for the SQL statement
+                    // set the parameters for the SQL insert statement
                     insertStatement.setInt(1, sensorId);
                     insertStatement.setInt(2, temp);
                     insertStatement.setInt(3, wind);
                     insertStatement.setInt(4, humidity);
                     insertStatement.setInt(5, co2);
 
-                    // 3. Add this statement to the batch
                     insertStatement.addBatch();
                 }
 
-                // 4. Execute the entire batch of 20 inserts at once
+                // execute all the sensor reading inserts
                 int[] updateCounts = insertStatement.executeBatch();
                 context.getLogger().info("Successfully inserted " + updateCounts.length + " sensor readings.");
             }
 
         } catch (Exception e) {
-            // Catch generic Exception to handle SQL or IO errors
+            // catch any errors
             context.getLogger().severe("Error inserting sensor data: " + e.getMessage());
-            // Print the stack trace to the Function App's logs for debugging
             e.printStackTrace();
         }
     }
 
-    /**
-     * Helper method to generate a random number between min and max (inclusive).
-     * @param min Minimum value (inclusive)
-     * @param max Maximum value (inclusive)
-     * @return Random integer between min and max
-     */
+    // generate a random number between min and max (helper function)
     private int getRandomNumber(int min, int max) {
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
-    /**
-     * Helper method to resolve the next available sensor_id from the database.
-     * This prevents primary key violations when running the function multiple times.
-     * @param connection Database connection
-     * @param context Execution context for logging
-     * @return Next available sensor_id (MAX(sensor_id) + 1, or 1 if table is empty)
-     */
+    // get the next available sensor_id to avoid primary key violations
     private int resolveNextSensorId(Connection connection, ExecutionContext context) throws SQLException {
         final String query = "SELECT ISNULL(MAX(sensor_id), 0) FROM sensors";
         try (Statement statement = connection.createStatement();
@@ -118,10 +115,7 @@ public class Function {
         return 1;
     }
 
-    /**
-     * Helper method to get a database connection.
-     * This uses the environment variables set in the Function App's configuration.
-     */
+    // get a database connection (helper function)
     private Connection getConnection(ExecutionContext context) throws SQLException, IOException {
         String dbServer = System.getenv("DB_SERVER");
         String dbName = System.getenv("DB_NAME");

@@ -9,51 +9,57 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
- * Azure Function for querying sensor statistics from the database.
- * Triggered automatically by SQL database trigger when data is inserted into the sensors table.
- * The SQL trigger calls this HTTP endpoint using sp_invoke_external_rest_endpoint.
- * 
- * Authentication: Uses FUNCTION level auth, requires function key in URL parameter.
- * The SQL trigger passes the function key as: /api/QueryStatsDB?code=YOUR_FUNCTION_KEY
+ * Azure Function for querying sensor statistics from the database every time the sensors table is updated.
+ * This function is called by the SQL trigger which uses an app key to be configured in the azure app
+ * This function also updates the end_time in the PerformanceMetrics table to track the end time of the batch.
  */
 public class QueryStatsDB {
 
-    /**
-     * Azure Function that queries sensor statistics.
-     * Automatically triggered by SQL database trigger when data is inserted.
-     * The SQL trigger in the database calls this HTTP endpoint when inserts occur.
-     * 
-     * This function is called by the SQL trigger: trg_QueryStatsAfterInsert
-     * which uses sp_invoke_external_rest_endpoint to call this endpoint.
-     */
+    private static final String LOG_END_SQL =
+        "UPDATE PerformanceMetrics SET end_time = SYSUTCDATETIME() WHERE id = (SELECT TOP 1 id FROM PerformanceMetrics WHERE end_time IS NULL ORDER BY id DESC)";
+
+    // query the sensor statistics on http trigger
     @FunctionName("QueryStatsDB")
     public void run(
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.POST, HttpMethod.GET},
-                authLevel = AuthorizationLevel.FUNCTION) // Requires function key in URL
+                authLevel = AuthorizationLevel.FUNCTION)
             HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
         
         context.getLogger().info("QueryStatsDB triggered by SQL database change at: " + LocalDateTime.now());
         context.getLogger().info("Database modification detected - querying sensor statistics.");
 
+        // Read the number of readings per sensor from the environment variable (this is needed for the grouping of the readings per sensor due to table configuration)
+        String sensorCountEnv = System.getenv("TEST_SENSOR_COUNT");
+        int sensorCount = Integer.parseInt(sensorCountEnv);
+        context.getLogger().info("Using sensor_count: " + sensorCount + " (from TEST_SENSOR_COUNT=" + sensorCountEnv + ")");
+        
+        // try to connect to the database and query the sensor statistics
         try (Connection connection = getConnection(context)) {
             context.getLogger().info("Database connection established.");
 
             StringBuilder result = new StringBuilder();
             result.append("Sensor Statistics Query Results\n");
             result.append("================================\n");
-            result.append("Timestamp: ").append(LocalDateTime.now()).append("\n\n");
+            result.append("Timestamp: ").append(LocalDateTime.now()).append("\n");
+            result.append("Sensor Count (Batch Size): ").append(sensorCount).append("\n\n");
 
-            // Execute all queries to get complete statistics
-            result.append(getTempStats(connection, context));
+            // execute all the queries to get the complete statistics
+            result.append(getTempStats(connection, context, sensorCount));
             result.append("\n");
-            result.append(getWindStats(connection, context));
+            result.append(getWindStats(connection, context, sensorCount));
             result.append("\n");
-            result.append(getHumidityStats(connection, context));
+            result.append(getHumidityStats(connection, context, sensorCount));
             result.append("\n");
-            result.append(getCO2Stats(connection, context));
+            result.append(getCO2Stats(connection, context, sensorCount));
+
+            // log the end time of the sensor
+            try (PreparedStatement logEndStatement = connection.prepareStatement(LOG_END_SQL)) {
+                int updateCount = logEndStatement.executeUpdate();
+                context.getLogger().info("Logged batch end time. Updated rows: " + updateCount);
+            }
 
             context.getLogger().info("Successfully retrieved all statistics.");
             context.getLogger().info(result.toString());
@@ -64,10 +70,7 @@ public class QueryStatsDB {
         }
     }
 
-    /**
-     * Helper method to get a database connection.
-     * Uses environment variables set in the Function App's configuration.
-     */
+    // get a database connection (helper function)
     private Connection getConnection(ExecutionContext context) throws SQLException, IOException {
         String dbServer = System.getenv("DB_SERVER");
         String dbName = System.getenv("DB_NAME");
@@ -87,19 +90,20 @@ public class QueryStatsDB {
         return connection;
     }
 
-    /**
-     * Retrieves temperature statistics and returns as formatted string.
-     * Groups sensor_id values into groups of 20 (1-20 = Sensor 1, 21-40 = Sensor 2, etc.)
-     */
-    private String getTempStats(Connection database, ExecutionContext context) throws SQLException {
+    // get the temperature statistics
+    private String getTempStats(Connection database, ExecutionContext context, int sensorCount) throws SQLException {
         StringBuilder result = new StringBuilder();
         result.append("Temperature Stats:\n");
         
+        // order by the first column, which is sensor_number
+        String query = String.format(
+            "SELECT ((sensor_id - 1) / %d) + 1 AS sensor_number, " +
+            "MIN(temperature) AS min_temp, MAX(temperature) AS max_temp, AVG(temperature) AS avg_temp " +
+            "FROM sensors GROUP BY ((sensor_id - 1) / %d) + 1 ORDER BY 1",
+            sensorCount, sensorCount);
+        
         try (Statement statement = database.createStatement();
-             ResultSet results = statement.executeQuery(
-                 "SELECT ((sensor_id - 1) / 20) + 1 AS sensor_number, " +
-                 "MIN(temperature) AS min_temp, MAX(temperature) AS max_temp, AVG(temperature) AS avg_temp " +
-                 "FROM sensors GROUP BY ((sensor_id - 1) / 20) + 1 ORDER BY sensor_number")) {
+             ResultSet results = statement.executeQuery(query)) {
             
             while (results.next()) {
                 int sensorNumber = results.getInt("sensor_number");
@@ -113,19 +117,19 @@ public class QueryStatsDB {
         return result.toString();
     }
 
-    /**
-     * Retrieves wind speed statistics and returns as formatted string.
-     * Groups sensor_id values into groups of 20 (1-20 = Sensor 1, 21-40 = Sensor 2, etc.)
-     */
-    private String getWindStats(Connection database, ExecutionContext context) throws SQLException {
+    // get the wind speed statistics
+    private String getWindStats(Connection database, ExecutionContext context, int sensorCount) throws SQLException {
         StringBuilder result = new StringBuilder();
         result.append("Wind Speed Stats:\n");
         
+        String query = String.format(
+            "SELECT ((sensor_id - 1) / %d) + 1 AS sensor_number, " +
+            "MIN(windspeed) AS min_wind, MAX(windspeed) AS max_wind, AVG(windspeed) AS avg_wind " +
+            "FROM sensors GROUP BY ((sensor_id - 1) / %d) + 1 ORDER BY 1",
+            sensorCount, sensorCount);
+        
         try (Statement statement = database.createStatement();
-             ResultSet results = statement.executeQuery(
-                 "SELECT ((sensor_id - 1) / 20) + 1 AS sensor_number, " +
-                 "MIN(windspeed) AS min_wind, MAX(windspeed) AS max_wind, AVG(windspeed) AS avg_wind " +
-                 "FROM sensors GROUP BY ((sensor_id - 1) / 20) + 1 ORDER BY sensor_number")) {
+             ResultSet results = statement.executeQuery(query)) {
             
             while (results.next()) {
                 int sensorNumber = results.getInt("sensor_number");
@@ -139,19 +143,19 @@ public class QueryStatsDB {
         return result.toString();
     }
 
-    /**
-     * Retrieves humidity statistics and returns as formatted string.
-     * Groups sensor_id values into groups of 20 (1-20 = Sensor 1, 21-40 = Sensor 2, etc.)
-     */
-    private String getHumidityStats(Connection database, ExecutionContext context) throws SQLException {
+    // get the humidity statistics
+    private String getHumidityStats(Connection database, ExecutionContext context, int sensorCount) throws SQLException {
         StringBuilder result = new StringBuilder();
         result.append("Relative Humidity Stats:\n");
         
+        String query = String.format(
+            "SELECT ((sensor_id - 1) / %d) + 1 AS sensor_number, " +
+            "MIN(relative_humidity) AS min_humidity, MAX(relative_humidity) AS max_humidity, AVG(relative_humidity) AS avg_humidity " +
+            "FROM sensors GROUP BY ((sensor_id - 1) / %d) + 1 ORDER BY 1",
+            sensorCount, sensorCount);
+    
         try (Statement statement = database.createStatement();
-             ResultSet results = statement.executeQuery(
-                 "SELECT ((sensor_id - 1) / 20) + 1 AS sensor_number, " +
-                 "MIN(relative_humidity) AS min_humidity, MAX(relative_humidity) AS max_humidity, AVG(relative_humidity) AS avg_humidity " +
-                 "FROM sensors GROUP BY ((sensor_id - 1) / 20) + 1 ORDER BY sensor_number")) {
+             ResultSet results = statement.executeQuery(query)) {
             
             while (results.next()) {
                 int sensorNumber = results.getInt("sensor_number");
@@ -165,19 +169,19 @@ public class QueryStatsDB {
         return result.toString();
     }
 
-    /**
-     * Retrieves CO2 statistics and returns as formatted string.
-     * Groups sensor_id values into groups of 20 (1-20 = Sensor 1, 21-40 = Sensor 2, etc.)
-     */
-    private String getCO2Stats(Connection database, ExecutionContext context) throws SQLException {
+    // get the CO2 statistics
+    private String getCO2Stats(Connection database, ExecutionContext context, int sensorCount) throws SQLException {
         StringBuilder result = new StringBuilder();
         result.append("CO2 Stats:\n");
         
+        String query = String.format(
+            "SELECT ((sensor_id - 1) / %d) + 1 AS sensor_number, " +
+            "MIN(CO2) AS min_co2, MAX(CO2) AS max_co2, AVG(CO2) AS avg_co2 " +
+            "FROM sensors GROUP BY ((sensor_id - 1) / %d) + 1 ORDER BY 1",
+            sensorCount, sensorCount);
+    
         try (Statement statement = database.createStatement();
-             ResultSet results = statement.executeQuery(
-                 "SELECT ((sensor_id - 1) / 20) + 1 AS sensor_number, " +
-                 "MIN(CO2) AS min_co2, MAX(CO2) AS max_co2, AVG(CO2) AS avg_co2 " +
-                 "FROM sensors GROUP BY ((sensor_id - 1) / 20) + 1 ORDER BY sensor_number")) {
+             ResultSet results = statement.executeQuery(query)) {
             
             while (results.next()) {
                 int sensorNumber = results.getInt("sensor_number");
