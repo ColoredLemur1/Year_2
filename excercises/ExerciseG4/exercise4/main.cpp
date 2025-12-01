@@ -20,6 +20,7 @@
 #include "cone.hpp"
 #include "cylinder.hpp"
 #include "loadobj.hpp"
+#include "simple_mesh.hpp"
 
 namespace
 {
@@ -142,6 +143,13 @@ int main() try
 	OGL_CHECKPOINT_ALWAYS();
 
 	// TODO: global GL setup goes here
+	glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	OGL_CHECKPOINT_ALWAYS();
 
@@ -169,7 +177,30 @@ int main() try
 	float angle = 0.f;
 
 	// Create vertex buffers and VAO
-	//TODO: create VBOs and VAO
+	// 1) Build a tiny coordinate axes mesh (lines)
+	SimpleMeshData axes{};
+	// X axis (red)
+	axes.positions.emplace_back(Vec3f{0.f, 0.f, 0.f});
+	axes.colors.emplace_back(Vec3f{1.f, 0.f, 0.f});
+	axes.positions.emplace_back(Vec3f{1.f, 0.f, 0.f});
+	axes.colors.emplace_back(Vec3f{1.f, 0.f, 0.f});
+	// Y axis (green)
+	axes.positions.emplace_back(Vec3f{0.f, 0.f, 0.f});
+	axes.colors.emplace_back(Vec3f{0.f, 1.f, 0.f});
+	axes.positions.emplace_back(Vec3f{0.f, 1.f, 0.f});
+	axes.colors.emplace_back(Vec3f{0.f, 1.f, 0.f});
+	// Z axis (blue)
+	axes.positions.emplace_back(Vec3f{0.f, 0.f, 0.f});
+	axes.colors.emplace_back(Vec3f{0.f, 0.f, 1.f});
+	axes.positions.emplace_back(Vec3f{0.f, 0.f, 1.f});
+	axes.colors.emplace_back(Vec3f{0.f, 0.f, 1.f});
+	GLuint axesVao = create_vao( axes );
+	std::size_t axesVertexCount = axes.positions.size(); // should be 6
+
+	// 2) Load the Armadillo OBJ and create a VAO for it
+	SimpleMeshData armadilloMesh = load_wavefront_obj( "assets/ex4/Armadillo.obj" );
+	GLuint armadilloVao = create_vao( armadilloMesh );
+	std::size_t armadilloVertexCount = armadilloMesh.positions.size();
 
 	// Main loop
 	while( !glfwWindowShouldClose( window ) )
@@ -220,12 +251,47 @@ int main() try
 			state.camControl.radius = 0.1f;
 
 		// Update: compute matrices
-		//TODO: define and compute projCameraWorld matrix
+		// For the Armadillo we apply a simple rotation over time
+		Mat44f model2world = make_rotation_y(angle);
+		
+		// Arc ball camera: construct world2camera from camera state
+		Mat44f Rx = make_rotation_x( state.camControl.theta );
+		Mat44f Ry = make_rotation_y( state.camControl.phi );
+		Mat44f T = make_translation( { 0.f, 0.f, -state.camControl.radius } );
+		Mat44f world2camera = T * Ry * Rx;
+		
+		Mat44f projection = make_perspective_projection(
+			60.f * std::numbers::pi_v<float>/180.f, 
+			fbwidth/float(fbheight), 
+			0.1f, 100.f);
+		Mat44f projCameraWorld = projection * world2camera * model2world;
 
 		// Draw scene
 		OGL_CHECKPOINT_DEBUG();
 
 		//TODO: draw frame
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(prog.programId());
+
+		// 1) Draw coordinate axes (use identity model transform)
+		{
+			Mat44f projCameraWorldAxes = projection * world2camera * kIdentity44f;
+			glUniformMatrix4fv(0, 1, GL_TRUE, projCameraWorldAxes.v);
+			glBindVertexArray(axesVao);
+			glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(axesVertexCount));
+			glBindVertexArray(0);
+		}
+
+		// 2) Draw Armadillo mesh (triangles)
+		{
+			Mat44f projCameraWorldArmadillo = projection * world2camera * model2world;
+			glUniformMatrix4fv(0, 1, GL_TRUE, projCameraWorldArmadillo.v);
+			glBindVertexArray(armadilloVao);
+			glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(armadilloVertexCount));
+			glBindVertexArray(0);
+		}
+		
+		glUseProgram(0);
 
 		OGL_CHECKPOINT_DEBUG();
 
@@ -237,6 +303,8 @@ int main() try
 	state.prog = nullptr;
 
 	//TODO: additional cleanup
+	glDeleteVertexArrays( 1, &axesVao );
+	glDeleteVertexArrays( 1, &armadilloVao );
 	
 	return 0;
 }
