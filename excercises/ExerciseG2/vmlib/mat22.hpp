@@ -29,26 +29,25 @@ struct Mat22f
 constexpr
 Mat22f operator*( Mat22f const& aLeft, Mat22f const& aRight ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-
-	//TODO: remove the following when you start your implementation
-	(void)aLeft; // Avoid warnings about unused arguments until the function
-	(void)aRight;  // is properly implemented.
-	return Mat22f{ 1.f, 0.f, 0.f, 1.f };
+	// Matrix multiplication: result[i][j] = sum over k of aLeft[i][k] * aRight[k][j]
+	// For 2x2 matrices stored in row-major order:
+	return Mat22f{
+		aLeft._00 * aRight._00 + aLeft._01 * aRight._10,  // result._00
+		aLeft._00 * aRight._01 + aLeft._01 * aRight._11,  // result._01
+		aLeft._10 * aRight._00 + aLeft._11 * aRight._10,  // result._10
+		aLeft._10 * aRight._01 + aLeft._11 * aRight._11   // result._11
+	};
 }
 
 constexpr
 Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-
-	//TODO: remove the following when you start your implementation
-	(void)aLeft; // Avoid warnings about unused arguments until the function
-	return aRight;
+	// Matrix-vector multiplication: result[i] = sum over j of matrix[i][j] * vector[j]
+	// For a 2x2 matrix multiplying a 2D vector:
+	return Vec2f{
+		aLeft._00 * aRight.x + aLeft._01 * aRight.y,  // result.x
+		aLeft._10 * aRight.x + aLeft._11 * aRight.y   // result.y
+	};
 }
 
 // Functions:
@@ -56,14 +55,10 @@ Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 inline
 Mat22f make_rotation_2d( float aAngle ) noexcept
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-
-	//TODO: remove the following when you start your implementation
-	(void)aAngle; // Avoid warnings about unused arguments until the function
-	              // is properly implemented.
-	return Mat22f{ 1.f, 0.f, 0.f, 1.f };
+	return Mat22f{
+		std::cos(aAngle), -std::sin(aAngle),
+		std::sin(aAngle), std::cos(aAngle)
+	};
 }
 
 #endif // MAT22_HPP_1F974C02_D0D1_4FBD_B5EE_A69C88112088

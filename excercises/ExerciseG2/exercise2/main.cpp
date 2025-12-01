@@ -160,6 +160,14 @@ int main() try
 		0.f, 0.8f,
 		-0.7f, -0.8f,
 		0.7f, -0.8f,
+
+		-0.9f, 0.3f,
+		-0.9f, -0.3f,
+		-0.6f, 0.0f,
+
+		0.6f, 0.0f,
+		0.9f, -0.3f,
+		0.9f, 0.3f,
 	};
 
 	GLuint positionVBO = 0;
@@ -171,6 +179,15 @@ int main() try
 		1.f, 1.f, 0.f,
 		1.f, 0.f, 1.f,
 		0.f, 1.f, 1.f,
+
+		1.f, 0.f, 0.f,  // red
+		0.f, 1.f, 0.f,  // green
+		0.f, 0.f, 1.f,  // blue
+		
+
+		1.f, 1.f, 1.f,  // white
+		0.5f, 0.5f, 0.5f, // gray
+		0.f, 0.f, 0.f,  // black
 	};
 
 	GLuint colorVBO = 0;
@@ -242,11 +259,15 @@ int main() try
 		//TODO: draw frame
 		glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(prog.programId());
+
+		Mat22f rotation = make_rotation_2d(angle);
+		glUniformMatrix2fv(1, 1, GL_FALSE, &rotation._00);
+
 		static float const baseColor[] = { 0.2f, 1.f, 1.f };
 		glUniform3fv(0, 1, baseColor);
 
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 9);
 
 		glBindVertexArray(0);
 		glUseProgram(0);
