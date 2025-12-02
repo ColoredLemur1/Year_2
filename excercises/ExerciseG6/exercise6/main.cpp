@@ -142,6 +142,11 @@ int main() try
 	OGL_CHECKPOINT_ALWAYS();
 
 	// TODO: global GL setup goes here
+	glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 
 	OGL_CHECKPOINT_ALWAYS();
 
@@ -170,9 +175,29 @@ int main() try
 
 	// Create vertex buffers and VAO
 	//TODO: create VBOs and VAO
+	SimpleMeshData planeMesh{
+        // Positions
+        { { -1.f, -1.f, 3.f },
+          { +1.f, -1.f, 3.f },
+          { +1.f, -1.f, -3.f },
+          { -1.f, -1.f, 3.f },
+          { +1.f, -1.f, -3.f },
+          { -1.f, -1.f, -3.f } },
+        
+        // Texture coordinates
+        { { 0.f, 0.f }, { 1.f, 0.f }, { 1.f, 3.f },
+          { 0.f, 0.f }, { 1.f, 3.f }, { 0.f, 3.f } }
+    };
+
+	GLuint vao = create_vao( planeMesh );
+
+    // Unbind VAO
+    glBindVertexArray(0);
 
 	// Load textures
 	//TODO: load texture(s)
+	GLuint textureObjectId = load_texture_2d( "assets/ex6/explosion.png" );
+	
 
 	// Main loop
 	while( !glfwWindowShouldClose( window ) )
@@ -209,9 +234,9 @@ int main() try
 		last = now;
 
 
-		angle += dt * std::numbers::pi_v<float> * 0.3f;
-		if( angle >= 2.f*std::numbers::pi_v<float> )
-			angle -= 2.f*std::numbers::pi_v<float>;
+		// angle += dt * std::numbers::pi_v<float> * 0.3f;
+		// if( angle >= 2.f*std::numbers::pi_v<float> )
+		// 	angle -= 2.f*std::numbers::pi_v<float>;
 
 		// Update camera state
 		if( state.camControl.actionZoomIn )
@@ -224,11 +249,39 @@ int main() try
 
 		// Update: compute matrices
 		//TODO: define and compute projCameraWorld matrix
+		Mat44f model2world = make_rotation_y(angle);
+		
+		// Arc ball camera: construct world2camera from camera state
+		Mat44f Rx = make_rotation_x( state.camControl.theta );
+		Mat44f Ry = make_rotation_y( state.camControl.phi );
+		Mat44f T = make_translation( { 0.f, 0.f, -state.camControl.radius } );
+		Mat44f world2camera = T * Ry * Rx;
+		
+		Mat44f projection = make_perspective_projection(
+			60.f * std::numbers::pi_v<float>/180.f, 
+			fbwidth / fbheight, 
+			0.1f, 100.f);
+		Mat44f projCameraWorld = projection * world2camera * model2world;
 
 		// Draw scene
 		OGL_CHECKPOINT_DEBUG();
 
 		//TODO: draw frame
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		
+		glUseProgram( prog.programId() );
+		
+		// Upload projection matrix to shader
+		glUniformMatrix4fv( 0, 1, GL_TRUE, projCameraWorld.v );
+		
+		// Bind texture
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, textureObjectId );
+		
+		// Bind VAO and draw
+		glBindVertexArray( vao );
+		glDrawArrays( GL_TRIANGLES, 0, planeMesh.positions.size() );
+		glBindVertexArray( 0 );
 
 		OGL_CHECKPOINT_DEBUG();
 
@@ -240,6 +293,8 @@ int main() try
 	state.prog = nullptr;
 
 	//TODO: additional cleanup
+	glDeleteVertexArrays( 1, &vao );
+	glDeleteTextures( 1, &textureObjectId );
 	
 	return 0;
 }
