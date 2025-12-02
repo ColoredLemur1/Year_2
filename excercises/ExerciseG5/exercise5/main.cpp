@@ -20,6 +20,7 @@
 #include "defaults.hpp"
 #include "cylinder.hpp"
 #include "loadcustom.hpp"
+#include "simple_mesh.hpp"
 
 namespace
 {
@@ -142,6 +143,11 @@ int main() try
 	OGL_CHECKPOINT_ALWAYS();
 
 	// TODO: global GL setup goes here
+	glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 
 	OGL_CHECKPOINT_ALWAYS();
 
@@ -170,6 +176,11 @@ int main() try
 
 	// Create vertex buffers and VAO
 	//TODO: create VBOs and VAO
+
+	// Load the Armadillo mesh and create a VAO for it
+	SimpleMeshData armadilloMesh = load_simple_binary_mesh( "assets/ex5/Armadillo.comp3811bin" );
+	GLuint armadilloVao = create_vao( armadilloMesh );
+	std::size_t armadilloVertexCount = armadilloMesh.positions.size();
 
 	// Main loop
 	while( !glfwWindowShouldClose( window ) )
@@ -221,11 +232,42 @@ int main() try
 
 		// Update: compute matrices
 		//TODO: define and compute projCameraWorld matrix
+		Mat44f model2world = make_rotation_y(angle);
+		
+		// Arc ball camera: construct world2camera from camera state
+		Mat44f Rx = make_rotation_x( state.camControl.theta );
+		Mat44f Ry = make_rotation_y( state.camControl.phi );
+		Mat44f T = make_translation( { 0.f, 0.f, -state.camControl.radius } );
+		Mat44f world2camera = T * Ry * Rx;
+		
+		Mat44f projection = make_perspective_projection(
+			60.f * std::numbers::pi_v<float>/180.f, 
+			fbwidth / fbheight, 
+			0.1f, 100.f);
+		Mat44f projCameraWorld = projection * world2camera * model2world;
 
 		// Draw scene
 		OGL_CHECKPOINT_DEBUG();
 
 		//TODO: draw frame
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(prog.programId());
+
+		Vec3f lightDir = normalize( Vec3f{ -1.f, 1.f, 0.5f } );
+		glUniform3fv( 2, 1, &lightDir.x );
+
+		glUniform3f( 3, 0.9f, 0.9f, 0.6f );
+		glUniform3f( 4, 0.05f, 0.05f, 0.05f );
+		
+		// Draw Armadillo mesh (triangles)
+		{
+			glUniformMatrix4fv(0, 1, GL_TRUE, projCameraWorld.v);
+			glBindVertexArray(armadilloVao);
+			glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(armadilloVertexCount));
+			glBindVertexArray(0);
+		}
+
+		glUseProgram(0);
 
 		OGL_CHECKPOINT_DEBUG();
 
@@ -235,6 +277,7 @@ int main() try
 
 	// Cleanup.
 	state.prog = nullptr;
+	glDeleteVertexArrays( 1, &armadilloVao );
 
 	//TODO: additional cleanup
 	
