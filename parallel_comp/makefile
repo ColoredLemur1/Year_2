@@ -6,7 +6,7 @@
 # directory (i.e., do not use subdirectories).
 #
 EXE = cwk1
-CC = gcc-15
+CC = gcc-14
 CCFLAGS = -Wall -fopenmp
 
 all:

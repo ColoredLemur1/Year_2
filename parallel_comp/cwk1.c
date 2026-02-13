@@ -43,6 +43,7 @@ void saveThresholdImage( struct Image *img )
 	int row, col;
 
 	// You need to parallelise this operation.
+	#pragma omp parallel for collapse(2)
 	for( row=0; row<img->size; row++ )
 		for( col=0; col<img->size; col++ )
 			img->pixels[row][col] = ( img->pixels[row][col]>127 ? 255 : 0 );
@@ -54,7 +55,27 @@ void saveThresholdImage( struct Image *img )
 // Flips the image vertically, and outputs to a new .pgm file.
 void saveFlippedImage( struct Image *img )
 {
-	// Your parallel implementation should go here.
+	int row, col;
+	int **temp;
+	int size = img->size;
+
+	// Create a copy of the image
+	allocSquareGrid( &temp, size );
+	#pragma omp parallel for collapse(2)
+	for( row=0; row<size; row++ )
+		for( col=0; col<size; col++ )
+			temp[row][col] = img->pixels[row][col];
+
+	// Read from the copy and write to the original image at the flipped position
+	#pragma omp parallel for collapse(2)
+	for( row=0; row<size; row++ )
+		for( col=0; col<size; col++ )
+			img->pixels[row][col] = temp[size - 1 - row][col];
+
+	// Free the copy
+	for( row=0; row<size; row++ )
+		free( temp[row] );
+	free( temp );
 
 	// You must call this function to save your final image.
 	writeFlippedImage( img );
