@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
 	double startTime = MPI_Wtime();
 
 	// Step 1. Communicate N from rank 0 to all processes using MPI functions.
-	if( (numprocs & (numprocs-1)) == 0 )			// Power-of-2 process count: use manual upside-down binary tree.
+	if( (numprocs & (numprocs-1)) == 0 )// numprocs is a power of two so share N with the upside down tree
 	{
 		MPI_Status status;
 		int offset, stride;
@@ -64,20 +64,20 @@ int main( int argc, char *argv[] )
 		{
 			stride = 2 * offset;
 
-			if( rank % stride == 0 )				// Sender ranks.
+			if( rank % stride == 0 )
 			{
 				int target = rank + offset;
 				if( target < numprocs )
 					MPI_Send( &N, 1, MPI_INT, target, 0, MPI_COMM_WORLD );
 			}
-			else if( rank % stride == offset )		// Receiver ranks.
+			else if( rank % stride == offset )
 			{
 				int source = rank - offset;
 				MPI_Recv( &N, 1, MPI_INT, source, 0, MPI_COMM_WORLD, &status );
 			}
 		}
 	}
-	else											// Fallback for non-power-of-2 process counts.
+	else // numprocs is not a power of two so use one bcast for N
 		MPI_Bcast( &N, 1, MPI_INT, 0, MPI_COMM_WORLD );
 
 	// Step 2. All process allocate local memory based on N, where N is divisible by numprocs.

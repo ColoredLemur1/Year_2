@@ -21,7 +21,7 @@ No. Machines:   Total No. Processes:     Mean time (average of 3 runs) in second
 1                       2                             0.201643                                      1.3149    
 1                       4                             0.181933                                      1.4573                                            
 1                       8                             0.140138                                      1.8920                           
-2                       16                            1.190587                                      0.2651                                                     
+2                       16                            1.190587                                      0.2227                                                     
 2                       32                            1.201327                                      0.2207                                          
 
 Please state the number of cores per machine (for Bragg 2.05, this is typically 12): Machine 1: 8 cores (Ryzen 7 9700x), Machine(s) 2 Multi-machine execution: 8 cores (i7-10700)
